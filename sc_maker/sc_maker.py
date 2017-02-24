@@ -1,0 +1,1 @@
+/home/t0/00_work/28_sc_maker/sc_maker/sc_maker.py
