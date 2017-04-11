@@ -1,0 +1,129 @@
+# -*- coding: utf-8 -*- 
+import os
+import sys
+import glob
+import atexit
+import multiprocessing
+
+sys.path.append("./build_context")
+from bd_config import *
+from bd_common import *
+
+# make builder ==============================
+common_env = Environment()
+
+# get Target config  ========================
+TARGET_CONFIG=''
+ret= Get_target_config(ARGLIST,DEFAULT_CONFIG,CONFIG_DIC)
+if (ret[0] == False):
+    print('Error on setting Target config')
+    exit(1)
+else:
+    TARGET_CONFIG = ret[1]
+if TARGET_CONFIG == '':
+    print('Error on setting Target config')
+    exit(1)
+# ===========================================
+
+# dependent module builds ===================
+if (GetOption('clean') != True) :
+    if (Do_dependent_module_build(TARGET_CONFIG) != True ):
+        exit(1)
+# ===========================================
+
+# Setup Build Environment ===========
+Do_Setup_Bd_Env(TARGET_CONFIG)
+# ===================================
+# remove dependency libraries
+if (GetOption('clean') == True) :
+    for item in glob.glob('out/'+TARGET_CONFIG+'/lib/*'):
+        os.remove(item)
+
+# default build execution option
+# Set Number of CPU ===============================
+num_cpu = int(os.environ.get('NUM_CPU',multiprocessing.cpu_count()))
+SetOption('num_jobs', num_cpu)
+print('Number of CPU in the system : '+str(num_cpu))
+# =================================================
+
+# Post Build procedure ============================
+if (GetOption('clean') != True) :
+  atexit.register(display_build_status,TARGET_CONFIG)
+# =================================================
+
+LIBS            = Get_env_var(TARGET_CONFIG,'lib')
+LIBPATH         = Get_env_var(TARGET_CONFIG,'lib_path')
+INCDIR          = Get_env_var(TARGET_CONFIG,'inc_path')
+CFLAGS          = Get_env_var(TARGET_CONFIG,'cflags')
+CPPFLAGS        = Get_env_var(TARGET_CONFIG,'cppflags')
+CCFLAGS         = Get_env_var(TARGET_CONFIG,'ccflags')
+
+LIBSRC_FILES    = Get_env_libsrc_files(TARGET_CONFIG)
+SRC_FILES       = Get_env_src_files(TARGET_CONFIG)
+SWUT_FILES      = Get_env_swut_files(TARGET_CONFIG)
+SWIT_FILES      = Get_env_swit_files(TARGET_CONFIG)
+
+LIB_TYPE        = Get_env_var(TARGET_CONFIG,'lib_type')
+
+TEST_INCDIR     = Get_env_var(TARGET_CONFIG,'test_inc_path')
+TEST_LIBS       = Get_env_var(TARGET_CONFIG,'test_lib')
+TEST_LIBPATH    = Get_env_var(TARGET_CONFIG,'test_lib_path')
+
+# The name of the output file ===================================
+TARGET_NAME=Get_Module_Name()
+SHLIBPREFIX = CONFIG_DIC[TARGET_CONFIG]['SHLIBPREFIX']
+SHLIBSUFFIX = CONFIG_DIC[TARGET_CONFIG]['SHLIBSUFFIX']
+PROGSUFFIX  = CONFIG_DIC[TARGET_CONFIG]['PROGSUFFIX']
+
+if (Get_env_var(TARGET_CONFIG,'target_lib_name') ==[]):
+    if (LIB_TYPE == 'Shared') :
+        TARGET_LIB_FILE='lib/'+SHLIBPREFIX+TARGET_NAME+SHLIBSUFFIX
+    elif(LIB_TYPE == 'Static') :
+        TARGET_LIB_FILE='lib/'+'lib'+TARGET_NAME+'.a'
+else :
+    if (LIB_TYPE == 'Shared') :
+        TARGET_LIB_FILE='lib/'+SHLIBPREFIX+Get_env_var(TARGET_CONFIG,'target_lib_name')+SHLIBSUFFIX
+    elif(LIB_TYPE == 'Static') :
+        TARGET_LIB_FILE='lib/'+'lib'+Get_env_var(TARGET_CONFIG,'target_lib_name')+'.a'
+    TARGET_NAME=Get_env_var(TARGET_CONFIG,'target_lib_name')
+
+if (Get_env_var(TARGET_CONFIG,'target_bin_name') ==[]):
+    TARGET_EXE_FILE='bin/'+TARGET_NAME+PROGSUFFIX
+else :
+    TARGET_EXE_FILE='bin/'+Get_env_var(TARGET_CONFIG,'target_bin_name')
+#================================================================
+
+Target_env = common_env.Clone()
+# Apply the environment values on Target environment
+for key in CONFIG_DIC[TARGET_CONFIG]:
+    Target_env[key] = CONFIG_DIC[TARGET_CONFIG][key]
+
+Target_env.Append(CPPPATH=INCDIR)
+Target_env.Append(CPATH=INCDIR)
+Target_env.Append(CFLAGS=CFLAGS)
+Target_env.Append(CPPFLAGS=CPPFLAGS)
+Target_env.Append(CCFLAGS=CCFLAGS)
+Target_env.Append(LIBS=LIBS)
+Target_env.Append(LIBPATH=LIBPATH)
+
+Test_env = Target_env.Clone()
+Test_env.Append(CPPPATH=TEST_INCDIR)
+Test_env.Append(CPATH=TEST_INCDIR)
+Test_env.Prepend(LIBS=TEST_LIBS)
+Test_env.Prepend(LIBS=[TARGET_NAME])
+Test_env.Append(LIBPATH=TEST_LIBPATH)
+
+Export('LIB_TYPE')
+Export('Target_env')
+Export('Test_env')
+Export('TARGET_LIB_FILE')
+Export('TARGET_EXE_FILE')
+Export('LIBSRC_FILES')
+Export('SRC_FILES')
+Export('TARGET_NAME')
+Export('LIBS')
+Export('SWUT_FILES')
+Export('SWIT_FILES')
+
+print("\033[1;36m :x: chk SRC_FILES"+str(SRC_FILES)+" \033[m\n");
+SConscript('./SConscript',variant_dir='out/'+TARGET_CONFIG,duplicate=0)

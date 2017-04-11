@@ -612,7 +612,12 @@ def display_build_status(target_config):
 def Do_dependent_module_build(target_config,
   dependency_module_info=Get_dependency_module_info(),top_path=Get_Top_Path()):
   ret = True
+  if len(dependency_module_info) == 0 :
+    return ret
+
   for module_item in dependency_module_info:
+    if len(module_item) == 0 :
+      break
     module_name = module_item[0][0]
     group_name  = module_item[0][1]
     print("Build dependent module ;["+module_name+"]-["+group_name+"]" )

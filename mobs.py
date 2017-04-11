@@ -728,7 +728,7 @@ def Get_dependency_module_info():
     return [
               # Example
               #  [
-              #      ['SDL2','SupportLayer']
+              #      ['SDL2','SupportLayer'],
               #      {
               #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
               #          'x64_Windows':'x64_Windows',
@@ -736,7 +736,7 @@ def Get_dependency_module_info():
               #      }
               #  ],
               #  [
-              #      ['SDL2_ttf','SupportLayer']
+              #      ['SDL2_ttf','SupportLayer'],
               #      {
               #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
               #          'x64_Windows':'x64_Windows',

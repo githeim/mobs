@@ -1,0 +1,1 @@
+../../../../../mobs/sc_maker/scripts/bd_common.py

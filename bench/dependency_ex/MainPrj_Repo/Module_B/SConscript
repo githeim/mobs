@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*- 
+Import('LIB_TYPE')
+Import('Target_env')
+Import('Test_env')
+Import('TARGET_LIB_FILE')
+Import('TARGET_EXE_FILE')
+Import('LIBSRC_FILES')
+Import('SRC_FILES')
+Import('TARGET_NAME')
+Import('LIBS')
+Import('SWUT_FILES')
+Import('SWIT_FILES')
+
+if (LIB_TYPE == 'Shared') :
+    LIB_BUILDER=Target_env.SharedLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
+elif(LIB_TYPE == 'Static') :
+    LIB_BUILDER=Target_env.StaticLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
+
+EXE_BUILDER=Target_env.Program(TARGET_EXE_FILE,SRC_FILES,LIBS=[TARGET_NAME]+LIBS)
+
+if (SWUT_FILES != [] and SWIT_FILES != [] ):
+    SWUT_BUILDER=Test_env.Program(TARGET_EXE_FILE+'_swut',SWUT_FILES)
+    SWIT_BUILDER=Test_env.Program(TARGET_EXE_FILE+'_swit',SWIT_FILES)
+    Depends( SWUT_BUILDER,TARGET_LIB_FILE)
+    Depends( SWIT_BUILDER,TARGET_LIB_FILE)
+
+Depends( EXE_BUILDER,TARGET_LIB_FILE)
