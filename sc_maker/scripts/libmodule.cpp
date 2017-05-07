@@ -1,5 +1,4 @@
 
-int testmodule()
-{
-    return 7;
+int testmodule_D_E_L_I_getPrjName_() {
+  return 7;
 }

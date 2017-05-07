@@ -1,14 +1,11 @@
 #include <stdio.h>
-#include "libmodule.h"
-extern int Module_B();
-extern int ModuleB_Sub00();
-extern int ModuleB_Sub01();
-int main(int argc, char *argv[])
-{
-    printf("Hello World\n");
-    printf("libmodule() = %d\n",testmodule());
-    printf("Module_B() = %d\n",Module_B());
-    printf("ModuleB_Sub00() = %d\n",ModuleB_Sub00());
-    printf("ModuleB_Sub01() = %d\n",ModuleB_Sub01());
-    return 0;
+#include "libmodule_a.h"
+#include "libmodule_b.h"
+#include "libmodule_c.h"
+int main(int argc, char *argv[]) {
+  printf("Hello World\n");
+  printf("testmodule_Module_A() = %d\n", testmodule_Module_A());
+  printf("testmodule_Module_B() = %d\n", testmodule_Module_B());
+  printf("testmodule_Module_C() = %d\n", testmodule_Module_C());
+  return 0;
 }

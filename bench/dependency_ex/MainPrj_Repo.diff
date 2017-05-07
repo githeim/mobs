@@ -1,0 +1,132 @@
+diff -urN org/MainPrj_Repo/Module_A/build_context/bd_settings.py MainPrj_Repo/Module_A/build_context/bd_settings.py
+--- org/MainPrj_Repo/Module_A/build_context/bd_settings.py	2017-05-06 17:33:31.869898124 +0900
++++ MainPrj_Repo/Module_A/build_context/bd_settings.py	2017-05-06 17:25:26.567491846 +0900
+@@ -21,24 +21,22 @@
+     # @return info of the dependency info
+ def Get_dependency_module_info(): 
+     return [
+-              # Example
+-              #  [
+-              #      ['SDL2','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ],
+-              #  [
+-              #      ['SDL2_ttf','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ]
+-
++                [
++                    ['Module_B','MainPrj_Repo'],
++                    {
++                        'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                        'x64_Windows':'x64_Windows',
++                        'arm_Android':'arm_Android',
++                    }
++                ],
++                [
++                    ['Module_C','MainPrj_Repo'],
++                    {
++                        'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                        'x64_Windows':'x64_Windows',
++                        'arm_Android':'arm_Android',
++                    }
++                ]
+            ]
+ 
+ 
+diff -urN org/MainPrj_Repo/Module_B/build_context/bd_settings.py MainPrj_Repo/Module_B/build_context/bd_settings.py
+--- org/MainPrj_Repo/Module_B/build_context/bd_settings.py	2017-05-06 17:33:31.949898520 +0900
++++ MainPrj_Repo/Module_B/build_context/bd_settings.py	2017-05-06 17:26:18.631749996 +0900
+@@ -21,24 +21,22 @@
+     # @return info of the dependency info
+ def Get_dependency_module_info(): 
+     return [
+-              # Example
+-              #  [
+-              #      ['SDL2','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ],
+-              #  [
+-              #      ['SDL2_ttf','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ]
+-
++                [
++                    ['Module_D','Support_Repo'],
++                    {
++                        'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                        'x64_Windows':'x64_Windows',
++                        'arm_Android':'arm_Android',
++                    }
++                ],
++                [
++                    ['Module_E','Support_Repo'],
++                    {
++                        'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                        'x64_Windows':'x64_Windows',
++                        'arm_Android':'arm_Android',
++                    }
++                ]
+            ]
+ 
+ 
+diff -urN org/MainPrj_Repo/Module_C/build_context/bd_settings.py MainPrj_Repo/Module_C/build_context/bd_settings.py
+--- org/MainPrj_Repo/Module_C/build_context/bd_settings.py	2017-05-06 17:33:32.033898937 +0900
++++ MainPrj_Repo/Module_C/build_context/bd_settings.py	2017-05-06 17:26:52.123916061 +0900
+@@ -21,24 +21,22 @@
+     # @return info of the dependency info
+ def Get_dependency_module_info(): 
+     return [
+-              # Example
+-              #  [
+-              #      ['SDL2','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ],
+-              #  [
+-              #      ['SDL2_ttf','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ]
+-
++                [
++                    ['Module_E','Support_Repo'],
++                    {
++                        'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                        'x64_Windows':'x64_Windows',
++                        'arm_Android':'arm_Android',
++                    }
++                ],
++                [
++                    ['Module_F','Support_Repo'],
++                    {
++                        'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                        'x64_Windows':'x64_Windows',
++                        'arm_Android':'arm_Android',
++                    }
++                ]
+            ]
+ 
+ 

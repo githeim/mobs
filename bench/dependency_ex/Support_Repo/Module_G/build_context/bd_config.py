@@ -2,7 +2,8 @@
 import os
 
 DEFAULT_CONFIG = 'x64_Linux_ubuntu'
-CONFIG_DIC ={
+def Get_CONFIG_DIC() :
+  return {
     'x64_Linux_ubuntu':{
         'PATH':     '/usr/bin'+':'+str(os.environ['PATH']),
         'CC':       'gcc',
@@ -46,6 +47,4 @@ CONFIG_DIC ={
         'PROGSUFFIX':'.exe',
         'LINKFLAGS':['-static-libgcc', '-static-libstdc++'],
     },
-    'arm_Android':{
-    },
-}
+  }

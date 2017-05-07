@@ -1,0 +1,448 @@
+diff -urN MainPrj_Repo/Module_A/build_context/bd_settings.py ../MainPrj_Repo/Module_A/build_context/bd_settings.py
+--- MainPrj_Repo/Module_A/build_context/bd_settings.py	2017-05-08 05:29:27.093837828 +0900
++++ ../MainPrj_Repo/Module_A/build_context/bd_settings.py	2017-05-07 03:52:45.508477454 +0900
+@@ -21,23 +21,20 @@
+     # @return info of the dependency info
+ def Get_dependency_module_info(): 
+     return [
+-              # Example
+-              #  [
+-              #      ['SDL2','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ],
+-              #  [
+-              #      ['SDL2_ttf','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ]
++              [
++                 ['Module_B','MainPrj_Repo'],
++                 {
++                     'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                     'x64_Windows':'x64_Windows',
++                 }
++              ],
++              [
++                 ['Module_C','MainPrj_Repo'],
++                 {
++                     'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                     'x64_Windows':'x64_Windows',
++                 }
++              ],
+ 
+            ]
+ 
+diff -urN MainPrj_Repo/Module_A/inc/libmodule_a.h ../MainPrj_Repo/Module_A/inc/libmodule_a.h
+--- MainPrj_Repo/Module_A/inc/libmodule_a.h	1970-01-01 09:00:00.000000000 +0900
++++ ../MainPrj_Repo/Module_A/inc/libmodule_a.h	2017-05-06 18:59:23.591441933 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_A_H_
++#define _LIBMODULE_A_H_
++
++int testmodule_Module_A();
++#endif // :X: #ifndef _LIBMODULE_A_H_
+diff -urN MainPrj_Repo/Module_A/inc/libmodule.h ../MainPrj_Repo/Module_A/inc/libmodule.h
+--- MainPrj_Repo/Module_A/inc/libmodule.h	2017-05-08 05:29:27.093837828 +0900
++++ ../MainPrj_Repo/Module_A/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_A();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN MainPrj_Repo/Module_A/src/main.cpp ../MainPrj_Repo/Module_A/src/main.cpp
+--- MainPrj_Repo/Module_A/src/main.cpp	2017-05-08 05:29:27.093837828 +0900
++++ ../MainPrj_Repo/Module_A/src/main.cpp	2017-05-07 07:19:05.413871373 +0900
+@@ -1,7 +1,11 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_a.h"
++#include "libmodule_b.h"
++#include "libmodule_c.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+-  printf("libmodule() = %d\n", testmodule_Module_A());
++  printf("testmodule_Module_A() = %d\n", testmodule_Module_A());
++  printf("testmodule_Module_B() = %d\n", testmodule_Module_B());
++  printf("testmodule_Module_C() = %d\n", testmodule_Module_C());
+   return 0;
+ }
+diff -urN MainPrj_Repo/Module_A/testframework/swit/swit_main.cpp ../MainPrj_Repo/Module_A/testframework/swit/swit_main.cpp
+--- MainPrj_Repo/Module_A/testframework/swit/swit_main.cpp	2017-05-08 05:29:27.093837828 +0900
++++ ../MainPrj_Repo/Module_A/testframework/swit/swit_main.cpp	2017-05-07 03:45:17.066253558 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_a.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN MainPrj_Repo/Module_A/testframework/swut/swut_main.cpp ../MainPrj_Repo/Module_A/testframework/swut/swut_main.cpp
+--- MainPrj_Repo/Module_A/testframework/swut/swut_main.cpp	2017-05-08 05:29:27.093837828 +0900
++++ ../MainPrj_Repo/Module_A/testframework/swut/swut_main.cpp	2017-05-07 03:45:26.294299321 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_a.h"
+ 
+ // Test template    
+ 
+diff -urN MainPrj_Repo/Module_B/build_context/bd_settings.py ../MainPrj_Repo/Module_B/build_context/bd_settings.py
+--- MainPrj_Repo/Module_B/build_context/bd_settings.py	2017-05-08 05:29:27.177838244 +0900
++++ ../MainPrj_Repo/Module_B/build_context/bd_settings.py	2017-05-07 06:52:00.365812501 +0900
+@@ -21,23 +21,13 @@
+     # @return info of the dependency info
+ def Get_dependency_module_info(): 
+     return [
+-              # Example
+-              #  [
+-              #      ['SDL2','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ],
+-              #  [
+-              #      ['SDL2_ttf','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ]
++              [
++                 ['Module_D','MainPrj_Repo'],
++                 {
++                     'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                     'x64_Windows':'x64_Windows',
++                 }
++              ],
+ 
+            ]
+ 
+@@ -70,7 +60,8 @@
+                   ['test_inc_path' ,['/home/t0/gtest/googletest/include'] ], 
+                   ['test_lib_path' ,['/home/t0/gtest/googletest/mybuild'] ], 
+                   #['target_lib_name' ,'customized_lib_name' ], # use this to change the library name
+-                  ['direct_linking','False'], 
++                  ['direct_linking','True'], 
++                  #['direct_linking','False'], 
+                   # --> if you want to use the libsrc codes in src code level
+                   #     use this option , default ; 'False'
+                ],
+diff -urN MainPrj_Repo/Module_B/inc/libmodule_b.h ../MainPrj_Repo/Module_B/inc/libmodule_b.h
+--- MainPrj_Repo/Module_B/inc/libmodule_b.h	1970-01-01 09:00:00.000000000 +0900
++++ ../MainPrj_Repo/Module_B/inc/libmodule_b.h	2017-05-06 19:00:20.943726303 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_B_H_
++#define _LIBMODULE_B_H_
++
++int testmodule_Module_B();
++#endif // :X: #ifndef _LIBMODULE_B_H_
+diff -urN MainPrj_Repo/Module_B/inc/libmodule.h ../MainPrj_Repo/Module_B/inc/libmodule.h
+--- MainPrj_Repo/Module_B/inc/libmodule.h	2017-05-08 05:29:27.173838224 +0900
++++ ../MainPrj_Repo/Module_B/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_B();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN MainPrj_Repo/Module_B/libsrc/libmodule.cpp ../MainPrj_Repo/Module_B/libsrc/libmodule.cpp
+--- MainPrj_Repo/Module_B/libsrc/libmodule.cpp	2017-05-08 05:29:27.173838224 +0900
++++ ../MainPrj_Repo/Module_B/libsrc/libmodule.cpp	2017-05-07 04:24:45.629999642 +0900
+@@ -1,4 +1,5 @@
+-
++#include "libmodule_d.h"
+ int testmodule_Module_B() {
+-  return 7;
++  
++  return testmodule_Module_D()+27;
+ }
+diff -urN MainPrj_Repo/Module_B/src/main.cpp ../MainPrj_Repo/Module_B/src/main.cpp
+--- MainPrj_Repo/Module_B/src/main.cpp	2017-05-08 05:29:27.173838224 +0900
++++ ../MainPrj_Repo/Module_B/src/main.cpp	2017-05-06 19:00:32.339782808 +0900
+@@ -1,5 +1,5 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_b.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+   printf("libmodule() = %d\n", testmodule_Module_B());
+diff -urN MainPrj_Repo/Module_B/testframework/swit/swit_main.cpp ../MainPrj_Repo/Module_B/testframework/swit/swit_main.cpp
+--- MainPrj_Repo/Module_B/testframework/swit/swit_main.cpp	2017-05-08 05:29:27.177838244 +0900
++++ ../MainPrj_Repo/Module_B/testframework/swit/swit_main.cpp	2017-05-07 04:25:02.406082837 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_b.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN MainPrj_Repo/Module_B/testframework/swut/swut_main.cpp ../MainPrj_Repo/Module_B/testframework/swut/swut_main.cpp
+--- MainPrj_Repo/Module_B/testframework/swut/swut_main.cpp	2017-05-08 05:29:27.177838244 +0900
++++ ../MainPrj_Repo/Module_B/testframework/swut/swut_main.cpp	2017-05-07 04:25:09.274116897 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_b.h"
+ 
+ // Test template    
+ 
+diff -urN MainPrj_Repo/Module_C/build_context/bd_settings.py ../MainPrj_Repo/Module_C/build_context/bd_settings.py
+--- MainPrj_Repo/Module_C/build_context/bd_settings.py	2017-05-08 05:29:27.257838641 +0900
++++ ../MainPrj_Repo/Module_C/build_context/bd_settings.py	2017-05-07 07:12:55.988039331 +0900
+@@ -21,24 +21,13 @@
+     # @return info of the dependency info
+ def Get_dependency_module_info(): 
+     return [
+-              # Example
+-              #  [
+-              #      ['SDL2','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ],
+-              #  [
+-              #      ['SDL2_ttf','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ]
+-
++                [
++                    ['Module_E','MainPrj_Repo'],
++                    {
++                        'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                        'x64_Windows':'x64_Windows',
++                    }
++                ],
+            ]
+ 
+ 
+@@ -70,7 +59,7 @@
+                   ['test_inc_path' ,['/home/t0/gtest/googletest/include'] ], 
+                   ['test_lib_path' ,['/home/t0/gtest/googletest/mybuild'] ], 
+                   #['target_lib_name' ,'customized_lib_name' ], # use this to change the library name
+-                  ['direct_linking','False'], 
++                  ['direct_linking','True'], 
+                   # --> if you want to use the libsrc codes in src code level
+                   #     use this option , default ; 'False'
+                ],
+diff -urN MainPrj_Repo/Module_C/inc/libmodule_c.h ../MainPrj_Repo/Module_C/inc/libmodule_c.h
+--- MainPrj_Repo/Module_C/inc/libmodule_c.h	1970-01-01 09:00:00.000000000 +0900
++++ ../MainPrj_Repo/Module_C/inc/libmodule_c.h	2017-05-07 03:53:47.232783555 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_C_H_
++#define _LIBMODULE_C_H_
++
++int testmodule_Module_C();
++#endif // :X: #ifndef _LIBMODULE_C_H_
+diff -urN MainPrj_Repo/Module_C/inc/libmodule.h ../MainPrj_Repo/Module_C/inc/libmodule.h
+--- MainPrj_Repo/Module_C/inc/libmodule.h	2017-05-08 05:29:27.253838621 +0900
++++ ../MainPrj_Repo/Module_C/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_C();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN MainPrj_Repo/Module_C/libsrc/libmodule.cpp ../MainPrj_Repo/Module_C/libsrc/libmodule.cpp
+--- MainPrj_Repo/Module_C/libsrc/libmodule.cpp	2017-05-08 05:29:27.257838641 +0900
++++ ../MainPrj_Repo/Module_C/libsrc/libmodule.cpp	2017-05-07 07:18:16.125626944 +0900
+@@ -1,4 +1,4 @@
+-
++#include "libmodule_e.h"
+ int testmodule_Module_C() {
+-  return 7;
++  return testmodule_Module_E()+7;
+ }
+diff -urN MainPrj_Repo/Module_C/src/main.cpp ../MainPrj_Repo/Module_C/src/main.cpp
+--- MainPrj_Repo/Module_C/src/main.cpp	2017-05-08 05:29:27.257838641 +0900
++++ ../MainPrj_Repo/Module_C/src/main.cpp	2017-05-07 03:53:27.540685898 +0900
+@@ -1,5 +1,5 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_c.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+   printf("libmodule() = %d\n", testmodule_Module_C());
+diff -urN MainPrj_Repo/Module_C/testframework/swit/swit_main.cpp ../MainPrj_Repo/Module_C/testframework/swit/swit_main.cpp
+--- MainPrj_Repo/Module_C/testframework/swit/swit_main.cpp	2017-05-08 05:29:27.257838641 +0900
++++ ../MainPrj_Repo/Module_C/testframework/swit/swit_main.cpp	2017-05-07 03:54:07.664884881 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_c.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN MainPrj_Repo/Module_C/testframework/swut/swut_main.cpp ../MainPrj_Repo/Module_C/testframework/swut/swut_main.cpp
+--- MainPrj_Repo/Module_C/testframework/swut/swut_main.cpp	2017-05-08 05:29:27.257838641 +0900
++++ ../MainPrj_Repo/Module_C/testframework/swut/swut_main.cpp	2017-05-07 03:54:27.236981942 +0900
+@@ -1,6 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
+-
++#include "libmodule_c.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN MainPrj_Repo/Module_D/build_context/bd_settings.py ../MainPrj_Repo/Module_D/build_context/bd_settings.py
+--- MainPrj_Repo/Module_D/build_context/bd_settings.py	2017-05-08 05:29:27.337839037 +0900
++++ ../MainPrj_Repo/Module_D/build_context/bd_settings.py	2017-05-07 17:34:05.876866633 +0900
+@@ -70,7 +70,7 @@
+                   ['test_inc_path' ,['/home/t0/gtest/googletest/include'] ], 
+                   ['test_lib_path' ,['/home/t0/gtest/googletest/mybuild'] ], 
+                   #['target_lib_name' ,'customized_lib_name' ], # use this to change the library name
+-                  ['direct_linking','False'], 
++                  ['direct_linking','True'], 
+                   # --> if you want to use the libsrc codes in src code level
+                   #     use this option , default ; 'False'
+                ],
+diff -urN MainPrj_Repo/Module_D/inc/libmodule_d.h ../MainPrj_Repo/Module_D/inc/libmodule_d.h
+--- MainPrj_Repo/Module_D/inc/libmodule_d.h	1970-01-01 09:00:00.000000000 +0900
++++ ../MainPrj_Repo/Module_D/inc/libmodule_d.h	2017-05-07 04:15:13.811163901 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_D_H_
++#define _LIBMODULE_D_H_
++
++int testmodule_Module_D();
++#endif // :X: #ifndef _LIBMODULE_D_H_
+diff -urN MainPrj_Repo/Module_D/inc/libmodule.h ../MainPrj_Repo/Module_D/inc/libmodule.h
+--- MainPrj_Repo/Module_D/inc/libmodule.h	2017-05-08 05:29:27.337839037 +0900
++++ ../MainPrj_Repo/Module_D/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_D();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN MainPrj_Repo/Module_D/src/main.cpp ../MainPrj_Repo/Module_D/src/main.cpp
+--- MainPrj_Repo/Module_D/src/main.cpp	2017-05-08 05:29:27.337839037 +0900
++++ ../MainPrj_Repo/Module_D/src/main.cpp	2017-05-07 04:02:29.335372744 +0900
+@@ -1,5 +1,5 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_d.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+   printf("libmodule() = %d\n", testmodule_Module_D());
+diff -urN MainPrj_Repo/Module_D/testframework/swit/swit_main.cpp ../MainPrj_Repo/Module_D/testframework/swit/swit_main.cpp
+--- MainPrj_Repo/Module_D/testframework/swit/swit_main.cpp	2017-05-08 05:29:27.337839037 +0900
++++ ../MainPrj_Repo/Module_D/testframework/swit/swit_main.cpp	2017-05-07 04:02:46.911459907 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_d.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN MainPrj_Repo/Module_D/testframework/swut/swut_main.cpp ../MainPrj_Repo/Module_D/testframework/swut/swut_main.cpp
+--- MainPrj_Repo/Module_D/testframework/swut/swut_main.cpp	2017-05-08 05:29:27.337839037 +0900
++++ ../MainPrj_Repo/Module_D/testframework/swut/swut_main.cpp	2017-05-07 04:02:54.739498728 +0900
+@@ -1,6 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
+-
++#include "libmodule_d.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN MainPrj_Repo/Module_E/build_context/bd_settings.py ../MainPrj_Repo/Module_E/build_context/bd_settings.py
+--- MainPrj_Repo/Module_E/build_context/bd_settings.py	2017-05-08 05:29:27.421839454 +0900
++++ ../MainPrj_Repo/Module_E/build_context/bd_settings.py	2017-05-07 07:20:26.470273344 +0900
+@@ -70,7 +70,7 @@
+                   ['test_inc_path' ,['/home/t0/gtest/googletest/include'] ], 
+                   ['test_lib_path' ,['/home/t0/gtest/googletest/mybuild'] ], 
+                   #['target_lib_name' ,'customized_lib_name' ], # use this to change the library name
+-                  ['direct_linking','False'], 
++                  ['direct_linking','True'], 
+                   # --> if you want to use the libsrc codes in src code level
+                   #     use this option , default ; 'False'
+                ],
+diff -urN MainPrj_Repo/Module_E/inc/libmodule_e.h ../MainPrj_Repo/Module_E/inc/libmodule_e.h
+--- MainPrj_Repo/Module_E/inc/libmodule_e.h	1970-01-01 09:00:00.000000000 +0900
++++ ../MainPrj_Repo/Module_E/inc/libmodule_e.h	2017-05-07 07:14:52.024614775 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_E_H_
++#define _LIBMODULE_E_H_
++
++int testmodule_Module_E();
++#endif // :X: #ifndef _LIBMODULE_E_H_
+diff -urN MainPrj_Repo/Module_E/inc/libmodule.h ../MainPrj_Repo/Module_E/inc/libmodule.h
+--- MainPrj_Repo/Module_E/inc/libmodule.h	2017-05-08 05:29:27.417839434 +0900
++++ ../MainPrj_Repo/Module_E/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_E();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN MainPrj_Repo/Module_E/libsrc/libmodule.cpp ../MainPrj_Repo/Module_E/libsrc/libmodule.cpp
+--- MainPrj_Repo/Module_E/libsrc/libmodule.cpp	2017-05-08 05:29:27.417839434 +0900
++++ ../MainPrj_Repo/Module_E/libsrc/libmodule.cpp	2017-05-07 07:15:51.888911652 +0900
+@@ -1,4 +1,3 @@
+-
+ int testmodule_Module_E() {
+   return 7;
+ }
+diff -urN MainPrj_Repo/Module_E/SConstruct ../MainPrj_Repo/Module_E/SConstruct
+--- MainPrj_Repo/Module_E/SConstruct	2017-05-08 05:29:27.417839434 +0900
++++ ../MainPrj_Repo/Module_E/SConstruct	2017-05-07 07:08:40.206770871 +0900
+@@ -16,11 +16,8 @@
+ 
+ bd_ctx = Create_Bd_Ctx()
+ if (bd_ctx == None) :
+-  print("\033[1;31mErr on build context instance \033[m")
++  print("\033[1;31m :x: Err on build context instance \033[m")
+   exit(1)
+-else :
+-  print("\033[1;33mModule ["+str(bd_ctx.m_ModuleID.m_ModuleID)+"] build start\033[m")
+-
+ 
+ # get Target config  ========================
+ ret= bd_ctx.Get_target_config(ARGLIST,DEFAULT_CONFIG,Get_CONFIG_DIC())
+diff -urN MainPrj_Repo/Module_E/src/main.cpp ../MainPrj_Repo/Module_E/src/main.cpp
+--- MainPrj_Repo/Module_E/src/main.cpp	2017-05-08 05:29:27.417839434 +0900
++++ ../MainPrj_Repo/Module_E/src/main.cpp	2017-05-07 07:16:21.005056043 +0900
+@@ -1,5 +1,5 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_e.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+   printf("libmodule() = %d\n", testmodule_Module_E());
+diff -urN MainPrj_Repo/Module_E/testframework/swit/swit_main.cpp ../MainPrj_Repo/Module_E/testframework/swit/swit_main.cpp
+--- MainPrj_Repo/Module_E/testframework/swit/swit_main.cpp	2017-05-08 05:29:27.421839454 +0900
++++ ../MainPrj_Repo/Module_E/testframework/swit/swit_main.cpp	2017-05-07 07:16:30.341102342 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_e.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN MainPrj_Repo/Module_E/testframework/swut/swut_main.cpp ../MainPrj_Repo/Module_E/testframework/swut/swut_main.cpp
+--- MainPrj_Repo/Module_E/testframework/swut/swut_main.cpp	2017-05-08 05:29:27.421839454 +0900
++++ ../MainPrj_Repo/Module_E/testframework/swut/swut_main.cpp	2017-05-07 07:16:37.953140091 +0900
+@@ -1,6 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
+-
++#include "libmodule_e.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {

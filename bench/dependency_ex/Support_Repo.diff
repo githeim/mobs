@@ -1,0 +1,36 @@
+diff -urN org/Support_Repo/Module_D/build_context/bd_settings.py Support_Repo/Module_D/build_context/bd_settings.py
+--- org/Support_Repo/Module_D/build_context/bd_settings.py	2017-05-06 17:33:32.113899333 +0900
++++ Support_Repo/Module_D/build_context/bd_settings.py	2017-05-06 17:28:05.040277602 +0900
+@@ -21,24 +21,14 @@
+     # @return info of the dependency info
+ def Get_dependency_module_info(): 
+     return [
+-              # Example
+-              #  [
+-              #      ['SDL2','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ],
+-              #  [
+-              #      ['SDL2_ttf','SupportLayer'],
+-              #      {
+-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+-              #          'x64_Windows':'x64_Windows',
+-              #          'arm_Android':'arm_Android',
+-              #      }
+-              #  ]
+-
++                [
++                    ['Module_G','Support_Repo'],
++                    {
++                        'x64_Linux_ubuntu':'x64_Linux_ubuntu',
++                        'x64_Windows':'x64_Windows',
++                        'arm_Android':'arm_Android',
++                    }
++                ],
+            ]
+ 
+ 

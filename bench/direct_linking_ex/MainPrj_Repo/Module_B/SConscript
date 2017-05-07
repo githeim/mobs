@@ -1,28 +1,48 @@
 # -*- coding: utf-8 -*- 
-Import('LIB_TYPE')
+import os
 Import('Target_env')
 Import('Test_env')
-Import('TARGET_LIB_FILE')
-Import('TARGET_EXE_FILE')
-Import('LIBSRC_FILES')
-Import('SRC_FILES')
-Import('TARGET_NAME')
-Import('LIBS')
-Import('SWUT_FILES')
-Import('SWIT_FILES')
+Import('bd_ctx')
 
-print("\033[1;36m :x: chk SRC_FILES"+str(SRC_FILES)+" \033[m\n");
-if (LIB_TYPE == 'Shared') :
-    LIB_BUILDER=Target_env.SharedLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
-elif(LIB_TYPE == 'Static') :
-    LIB_BUILDER=Target_env.StaticLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
 
-EXE_BUILDER=Target_env.Program(TARGET_EXE_FILE,SRC_FILES,LIBS=[TARGET_NAME]+LIBS)
+LIB_TYPE = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib_type')
+LIBSRC_FILES = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib_src')
+SWUT_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'swut_src')
+SWIT_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'swit_src')
+SRC_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'src')
+LIBS = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib')
 
-if (SWUT_FILES != [] and SWIT_FILES != [] ):
-    SWUT_BUILDER=Test_env.Program(TARGET_EXE_FILE+'_swut',SWUT_FILES)
-    SWIT_BUILDER=Test_env.Program(TARGET_EXE_FILE+'_swit',SWIT_FILES)
-    Depends( SWUT_BUILDER,TARGET_LIB_FILE)
-    Depends( SWIT_BUILDER,TARGET_LIB_FILE)
+TARGET_NAME = bd_ctx.m_Target_Name[bd_ctx.m_Target_Config]
+TARGET_LIB_FILE = bd_ctx.m_Target_LIB_file[bd_ctx.m_Target_Config]
+TARGET_EXE_FILE = bd_ctx.m_Target_EXE_file[bd_ctx.m_Target_Config]
+SWIT_RUNNER_FILE = bd_ctx.m_SWIT_RUNNER_file[bd_ctx.m_Target_Config]
+SWUT_RUNNER_FILE = bd_ctx.m_SWUT_RUNNER_file[bd_ctx.m_Target_Config]
 
-Depends( EXE_BUILDER,TARGET_LIB_FILE)
+
+
+is_direct_linking =bd_ctx.Is_Direct_Linking(bd_ctx,bd_ctx.m_Target_Config)
+if (is_direct_linking == 'False'):
+  if (LIB_TYPE == 'Shared') :
+      LIB_BUILDER=Target_env.SharedLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
+  elif(LIB_TYPE == 'Static') :
+      LIB_BUILDER=Target_env.StaticLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
+
+  EXE_BUILDER=Target_env.Program(TARGET_EXE_FILE,SRC_FILES,LIBS=[TARGET_NAME]+LIBS)
+
+  if (SWUT_FILES != [] and SWIT_FILES != [] ):
+      SWUT_BUILDER=Test_env.Program(SWUT_RUNNER_FILE,SWUT_FILES)
+      SWIT_BUILDER=Test_env.Program(SWIT_RUNNER_FILE,SWIT_FILES)
+      Depends( SWUT_BUILDER,TARGET_LIB_FILE)
+      Depends( SWIT_BUILDER,TARGET_LIB_FILE)
+
+  Depends( EXE_BUILDER,TARGET_LIB_FILE)
+elif (is_direct_linking == 'True'):
+  print("\033[1;36mModule["+str(bd_ctx.m_ModuleID.m_ModuleName)+"] is in"+\
+  " direct linking mode, therefore the build will not be proceeded \033[m")
+
+
+
+# Setting Submodule repository 
+# ; remember SConscript current dir is 'out/CONFIG-NAME' 
+#   that's why "../.." is added
+Target_env.Repository([bd_ctx.m_ModuleID.GetTopPath()+"../../"])

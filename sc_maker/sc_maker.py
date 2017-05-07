@@ -67,10 +67,13 @@ def Make_Script(TargetScriptName,BaseScript,ScriptFilePath):
   # Generate Script file contents into one string
   filecontents_text =""
   for file_path in filelist:
-    with open (file_path,'r',errors='ignore') as f:
-      filetext=f.read()
-      filename = os.path.basename(file_path)
-      filecontents_text += FileText2FuncScript(filetext,filename)
+    if (os.path.isfile(file_path) == True \
+       and os.path.splitext(file_path)[1] != '.pyc' \
+            ) :
+      with open (file_path,'r',errors='ignore') as f:
+        filetext=f.read()
+        filename = os.path.basename(file_path)
+        filecontents_text += FileText2FuncScript(filetext,filename)
       
 
 

@@ -1,0 +1,5 @@
+*.swp
+*.a
+*.so
+*.pyc
+*.dblite

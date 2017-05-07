@@ -1,5 +1,4 @@
 
-int testmodule()
-{
-    return 7;
+int testmodule_Module_E() {
+  return 7;
 }

@@ -23,7 +23,7 @@ def Get_dependency_module_info():
     return [
               # Example
               #  [
-              #      ['SDL2','SupportLayer']
+              #      ['SDL2','SupportLayer'],
               #      {
               #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
               #          'x64_Windows':'x64_Windows',
@@ -31,7 +31,7 @@ def Get_dependency_module_info():
               #      }
               #  ],
               #  [
-              #      ['SDL2_ttf','SupportLayer']
+              #      ['SDL2_ttf','SupportLayer'],
               #      {
               #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
               #          'x64_Windows':'x64_Windows',
@@ -54,11 +54,12 @@ def Get_common_bd_env():
             ]                  
  
 # Total Build Environment
-g_Bd_Environment = [
+def Get_specific_bd_env():   
+  return [
             ['x64_Linux_ubuntu',
                [
                   ['inc_path',[ ] ],
-                  ['lib_path',[ ] ],
+                  ['lib_path',['out/x64_Linux_ubuntu/lib' ] ],
                   ['lib'     ,[ ] ],
                   ['lib_src' ,[ ] ],
                   ['src'     ,['src/main.cpp'] ],
@@ -69,27 +70,21 @@ g_Bd_Environment = [
                   ['test_inc_path' ,['/home/t0/gtest/googletest/include'] ], 
                   ['test_lib_path' ,['/home/t0/gtest/googletest/mybuild'] ], 
                   #['target_lib_name' ,'customized_lib_name' ], # use this to change the library name
+                  ['direct_linking','False'], 
+                  # --> if you want to use the libsrc codes in src code level
+                  #     use this option , default ; 'False'
                ],
             ],
             ['x64_Windows',
                [
                   [ 'inc_path',[ ] ],
-                  [ 'lib_path',[ ] ],
+                  [ 'lib_path',['out/x64_Windows/lib' ] ],
                   [ 'lib'     ,[ ] ],
                   [ 'lib_src' ,[ ] ],
                   [ 'src'     ,['src/main.cpp'] ],
                   [ 'lib_type' ,'Shared' ],
                ],
             ],
-            ['arm_Android',
-               [
-                  [ 'inc_path',[ ] ],
-                  [ 'lib_path',[ ] ],
-                  [ 'lib'     ,[ ] ],
-                  [ 'lib_src' ,[ ] ],
-                  [ 'src'     ,[ ] ],
-               ],
-            ]
         ]
 
     ##
@@ -100,6 +95,11 @@ def Get_output_common():
     return  [
                 [ 'inc_path',['inc'] ],
                 [ 'lib',['Module_E'] ],
+                [ 'bin_file',[
+                    [ 'res/*.*','res'],
+                    ] 
+                  ],
+
             ]
 
     ##
@@ -107,24 +107,28 @@ def Get_output_common():
     #
     # @return Get output list of the module
 def Get_output_specific():
-    return [
-            ['x64_Linux_ubuntu',
-                [
-                    [ 'inc_path',['inc/x64_Linux_ubuntu'] ],
-                    [ 'bin_file',['out/x64_Linux_ubuntu/lib/libModule_E.so'] ],
-                    [ 'lib_path',['out/x64_Linux_ubuntu/lib'] ],
+  return [
+      ['x64_Linux_ubuntu',
+        [
+            [ 'inc_path',['inc/x64_Linux_ubuntu'] ],
+            [ 'bin_file',[
+                ['out/x64_Linux_ubuntu/lib/libModule_E.so','lib'],
                 ]
-            ],
-            ['x64_Windows', 
-                [
-                    [ 'inc_path',['inc/x64_Windows'] ],
-                    [ 'bin_file',['out/x64_Windows/lib/Module_E.dll'] ],
-                    [ 'lib_path',['out/x64_Windows/lib'] ],
-                ]
-
-            ]
-
+              ],
+            [ 'lib_path',['out/x64_Linux_ubuntu/lib'] ],
         ]
+      ],
+      ['x64_Windows', 
+        [
+            [ 'inc_path',['inc/x64_Windows'] ],
+            [ 'bin_file',[
+                  ['out/x64_Windows/lib/Module_E.dll','lib'],
+                ] 
+              ],
+            [ 'lib_path',['out/x64_Windows/lib'] ],
+        ]
+      ]
+    ]
 
 def Get_output_dirs():
     return [
@@ -141,6 +145,9 @@ def Get_Bd_Environment():
 def Set_Bd_Environment(val):
     global g_Bd_Environment 
     g_Bd_Environment = copy.deepcopy(val)
+
+def Do_pre_build(target_config):
+    print("Do pre build job")
 
 def Do_post_build(target_config):
     print("Do post build job")
