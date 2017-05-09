@@ -273,7 +273,7 @@ class ModuleCtx :
   ##
   # @brief get absolute file/path names from relative ones 
   #
-  # @param relative_path[IN] the wildcard list to find
+  # @param relative_path[IN] the list to change
   #               ex) ['inc',
   #                 '../../MainPrj_Repo/Module_B/inc/x64_Linux_ubuntu']
   #
@@ -283,6 +283,21 @@ class ModuleCtx :
     for item in relative_path:
         file_path_list.append(os.path.abspath(item))
     return copy.deepcopy(file_path_list)
+
+  ##
+  # @brief get relative file/path names from absolute ones 
+  #
+  # @param abs_path[IN] the list to change
+  #               ex) ['inc',
+  #                 '../../MainPrj_Repo/Module_B/inc/x64_Linux_ubuntu']
+  #
+  # @return the list trimed to absolute path
+  def Get_REL_path(self,abs_path):
+    file_path_list = []
+    for item in abs_path:
+        file_path_list.append(os.path.relpath(item))
+    return copy.deepcopy(file_path_list)
+
 
 
   ##
@@ -342,7 +357,9 @@ class ModuleCtx :
              bd_ctx_env[idx][1][env_idx][1] = \
                  bd_ctx.Get_ABS_path(env_val[1])
              tmp_set = set(bd_ctx_env[idx][1][env_idx][1])
+             #bd_ctx_env[idx][1][env_idx][1] = bd_ctx.Get_REL_path(list(tmp_set))
              bd_ctx_env[idx][1][env_idx][1] = list(tmp_set)
+             #print("\033[1;36m :x: bd_ctx_env[idx][1][env_idx][1] "+str(bd_ctx_env[idx][1][env_idx][1])+"\033[m")
 
     return None
 
@@ -599,6 +616,7 @@ class ModuleCtx :
     for fileinfo in bin_file_info:
       sourcefile_info = fileinfo[0]
       sourcefile_list = self.Get_files_from_wildcard([sourcefile_info])
+
       relative_target_path = fileinfo[1]
       local_target_path = DEF_DEFAULT_OUT_PATH +'/'+config+'/'+relative_target_path
       if (os.path.isdir(local_target_path) == False) :
