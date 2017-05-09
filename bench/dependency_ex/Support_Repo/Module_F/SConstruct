@@ -16,8 +16,11 @@ common_env = Environment()
 
 bd_ctx = Create_Bd_Ctx()
 if (bd_ctx == None) :
-  print("\033[1;31m :x: Err on build context instance \033[m")
+  print("\033[1;31mErr on build context instance \033[m")
   exit(1)
+else :
+  print("\033[1;33mModule ["+str(bd_ctx.m_ModuleID.m_ModuleID)+"] build start\033[m")
+
 
 # get Target config  ========================
 ret= bd_ctx.Get_target_config(ARGLIST,DEFAULT_CONFIG,Get_CONFIG_DIC())

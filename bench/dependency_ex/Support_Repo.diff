@@ -1,6 +1,6 @@
-diff -urN org/Support_Repo/Module_D/build_context/bd_settings.py Support_Repo/Module_D/build_context/bd_settings.py
---- org/Support_Repo/Module_D/build_context/bd_settings.py	2017-05-06 17:33:32.113899333 +0900
-+++ Support_Repo/Module_D/build_context/bd_settings.py	2017-05-06 17:28:05.040277602 +0900
+diff -urN Support_Repo/Module_D/build_context/bd_settings.py ../Support_Repo/Module_D/build_context/bd_settings.py
+--- Support_Repo/Module_D/build_context/bd_settings.py	2017-05-09 15:06:21.810544633 +0900
++++ ../Support_Repo/Module_D/build_context/bd_settings.py	2017-05-09 06:18:10.521396017 +0900
 @@ -21,24 +21,14 @@
      # @return info of the dependency info
  def Get_dependency_module_info(): 
@@ -33,4 +33,211 @@ diff -urN org/Support_Repo/Module_D/build_context/bd_settings.py Support_Repo/Mo
 +                ],
             ]
  
+ 
+diff -urN Support_Repo/Module_D/inc/libmodule_d.h ../Support_Repo/Module_D/inc/libmodule_d.h
+--- Support_Repo/Module_D/inc/libmodule_d.h	1970-01-01 09:00:00.000000000 +0900
++++ ../Support_Repo/Module_D/inc/libmodule_d.h	2017-05-09 14:47:19.440879928 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_D_H_
++#define _LIBMODULE_D_H_
++
++int testmodule_Module_D();
++#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN Support_Repo/Module_D/inc/libmodule.h ../Support_Repo/Module_D/inc/libmodule.h
+--- Support_Repo/Module_D/inc/libmodule.h	2017-05-09 15:06:21.810544633 +0900
++++ ../Support_Repo/Module_D/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_D();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN Support_Repo/Module_D/libsrc/libmodule.cpp ../Support_Repo/Module_D/libsrc/libmodule.cpp
+--- Support_Repo/Module_D/libsrc/libmodule.cpp	2017-05-09 15:06:21.810544633 +0900
++++ ../Support_Repo/Module_D/libsrc/libmodule.cpp	2017-05-09 15:00:26.100780764 +0900
+@@ -1,4 +1,4 @@
+-
++#include "libmodule_g.h"
+ int testmodule_Module_D() {
+-  return 7;
++  return testmodule_Module_G()+7;
+ }
+diff -urN Support_Repo/Module_D/src/main.cpp ../Support_Repo/Module_D/src/main.cpp
+--- Support_Repo/Module_D/src/main.cpp	2017-05-09 15:06:21.810544633 +0900
++++ ../Support_Repo/Module_D/src/main.cpp	2017-05-09 14:47:48.165022363 +0900
+@@ -1,7 +1,7 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_d.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+-  printf("libmodule() = %d\n", testmodule_Module_D());
++  printf("testmodule_Module_D() = %d\n", testmodule_Module_D());
+   return 0;
+ }
+diff -urN Support_Repo/Module_D/testframework/swit/swit_main.cpp ../Support_Repo/Module_D/testframework/swit/swit_main.cpp
+--- Support_Repo/Module_D/testframework/swit/swit_main.cpp	2017-05-09 15:06:21.810544633 +0900
++++ ../Support_Repo/Module_D/testframework/swit/swit_main.cpp	2017-05-09 14:48:20.661183503 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_d.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN Support_Repo/Module_D/testframework/swut/swut_main.cpp ../Support_Repo/Module_D/testframework/swut/swut_main.cpp
+--- Support_Repo/Module_D/testframework/swut/swut_main.cpp	2017-05-09 15:06:21.810544633 +0900
++++ ../Support_Repo/Module_D/testframework/swut/swut_main.cpp	2017-05-09 14:48:28.341221586 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_d.h"
+ 
+ // Test template    
+ 
+diff -urN Support_Repo/Module_E/inc/libmodule_e.h ../Support_Repo/Module_E/inc/libmodule_e.h
+--- Support_Repo/Module_E/inc/libmodule_e.h	1970-01-01 09:00:00.000000000 +0900
++++ ../Support_Repo/Module_E/inc/libmodule_e.h	2017-05-09 14:49:14.077448380 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_E_H_
++#define _LIBMODULE_E_H_
++
++int testmodule_Module_E();
++#endif // :X: #ifndef _LIBMODULE_E_H_
+diff -urN Support_Repo/Module_E/inc/libmodule.h ../Support_Repo/Module_E/inc/libmodule.h
+--- Support_Repo/Module_E/inc/libmodule.h	2017-05-09 15:06:21.890545030 +0900
++++ ../Support_Repo/Module_E/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_E();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN Support_Repo/Module_E/src/main.cpp ../Support_Repo/Module_E/src/main.cpp
+--- Support_Repo/Module_E/src/main.cpp	2017-05-09 15:06:21.890545030 +0900
++++ ../Support_Repo/Module_E/src/main.cpp	2017-05-09 14:49:38.197567985 +0900
+@@ -1,5 +1,5 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_e.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+   printf("libmodule() = %d\n", testmodule_Module_E());
+diff -urN Support_Repo/Module_E/testframework/swit/swit_main.cpp ../Support_Repo/Module_E/testframework/swit/swit_main.cpp
+--- Support_Repo/Module_E/testframework/swit/swit_main.cpp	2017-05-09 15:06:21.894545050 +0900
++++ ../Support_Repo/Module_E/testframework/swit/swit_main.cpp	2017-05-09 14:50:19.637773476 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_e.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN Support_Repo/Module_E/testframework/swut/swut_main.cpp ../Support_Repo/Module_E/testframework/swut/swut_main.cpp
+--- Support_Repo/Module_E/testframework/swut/swut_main.cpp	2017-05-09 15:06:21.894545050 +0900
++++ ../Support_Repo/Module_E/testframework/swut/swut_main.cpp	2017-05-09 14:53:46.418798848 +0900
+@@ -1,6 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
+-
++#include "libmodule_e.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN Support_Repo/Module_F/inc/libmodule_f.h ../Support_Repo/Module_F/inc/libmodule_f.h
+--- Support_Repo/Module_F/inc/libmodule_f.h	1970-01-01 09:00:00.000000000 +0900
++++ ../Support_Repo/Module_F/inc/libmodule_f.h	2017-05-09 14:53:07.734607023 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_F_H_
++#define _LIBMODULE_F_H_
++
++int testmodule_Module_F();
++#endif // :X: #ifndef _LIBMODULE_F_H_
+diff -urN Support_Repo/Module_F/inc/libmodule.h ../Support_Repo/Module_F/inc/libmodule.h
+--- Support_Repo/Module_F/inc/libmodule.h	2017-05-09 15:06:21.974545446 +0900
++++ ../Support_Repo/Module_F/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_F();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN Support_Repo/Module_F/src/main.cpp ../Support_Repo/Module_F/src/main.cpp
+--- Support_Repo/Module_F/src/main.cpp	2017-05-09 15:06:21.974545446 +0900
++++ ../Support_Repo/Module_F/src/main.cpp	2017-05-09 14:54:46.651097524 +0900
+@@ -1,5 +1,5 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_f.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+   printf("libmodule() = %d\n", testmodule_Module_F());
+diff -urN Support_Repo/Module_F/testframework/swit/swit_main.cpp ../Support_Repo/Module_F/testframework/swit/swit_main.cpp
+--- Support_Repo/Module_F/testframework/swit/swit_main.cpp	2017-05-09 15:06:21.974545446 +0900
++++ ../Support_Repo/Module_F/testframework/swit/swit_main.cpp	2017-05-09 14:54:22.666978593 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_f.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN Support_Repo/Module_F/testframework/swut/swut_main.cpp ../Support_Repo/Module_F/testframework/swut/swut_main.cpp
+--- Support_Repo/Module_F/testframework/swut/swut_main.cpp	2017-05-09 15:06:21.974545446 +0900
++++ ../Support_Repo/Module_F/testframework/swut/swut_main.cpp	2017-05-09 14:54:38.255055890 +0900
+@@ -1,6 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
+-
++#include "libmodule_f.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN Support_Repo/Module_G/inc/libmodule_g.h ../Support_Repo/Module_G/inc/libmodule_g.h
+--- Support_Repo/Module_G/inc/libmodule_g.h	1970-01-01 09:00:00.000000000 +0900
++++ ../Support_Repo/Module_G/inc/libmodule_g.h	2017-05-09 14:53:00.610571697 +0900
+@@ -0,0 +1,5 @@
++#ifndef _LIBMODULE_G_H_
++#define _LIBMODULE_G_H_
++
++int testmodule_Module_G();
++#endif // :X: #ifndef _LIBMODULE_G_H_
+diff -urN Support_Repo/Module_G/inc/libmodule.h ../Support_Repo/Module_G/inc/libmodule.h
+--- Support_Repo/Module_G/inc/libmodule.h	2017-05-09 15:06:22.054545843 +0900
++++ ../Support_Repo/Module_G/inc/libmodule.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,5 +0,0 @@
+-#ifndef _LIBMODULE_H_
+-#define _LIBMODULE_H_
+-
+-int testmodule_Module_G();
+-#endif // :X: #ifndef _LIBMODULE_H_
+diff -urN Support_Repo/Module_G/src/main.cpp ../Support_Repo/Module_G/src/main.cpp
+--- Support_Repo/Module_G/src/main.cpp	2017-05-09 15:06:22.058545863 +0900
++++ ../Support_Repo/Module_G/src/main.cpp	2017-05-09 15:04:04.521863855 +0900
+@@ -1,5 +1,5 @@
+ #include <stdio.h>
+-#include "libmodule.h"
++#include "libmodule_g.h"
+ int main(int argc, char *argv[]) {
+   printf("Hello World\n");
+   printf("libmodule() = %d\n", testmodule_Module_G());
+diff -urN Support_Repo/Module_G/testframework/swit/swit_main.cpp ../Support_Repo/Module_G/testframework/swit/swit_main.cpp
+--- Support_Repo/Module_G/testframework/swit/swit_main.cpp	2017-05-09 15:06:22.058545863 +0900
++++ ../Support_Repo/Module_G/testframework/swit/swit_main.cpp	2017-05-09 15:04:15.013915883 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_g.h"
+ // Test template    
+ 
+ class SampleTest : public testing::Test {
+diff -urN Support_Repo/Module_G/testframework/swut/swut_main.cpp ../Support_Repo/Module_G/testframework/swut/swut_main.cpp
+--- Support_Repo/Module_G/testframework/swut/swut_main.cpp	2017-05-09 15:06:22.058545863 +0900
++++ ../Support_Repo/Module_G/testframework/swut/swut_main.cpp	2017-05-09 15:04:22.737954184 +0900
+@@ -1,5 +1,5 @@
+ #include <gtest/gtest.h>
+-#include "libmodule.h"
++#include "libmodule_g.h"
+ 
+ // Test template    
  

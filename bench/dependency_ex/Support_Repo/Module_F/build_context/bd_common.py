@@ -270,6 +270,20 @@ class ModuleCtx :
                   # If there is no same item, append it
                   itemsA.append(itemB)
       return itemsA
+  ##
+  # @brief get absolute file/path names from relative ones 
+  #
+  # @param relative_path[IN] the wildcard list to find
+  #               ex) ['inc',
+  #                 '../../MainPrj_Repo/Module_B/inc/x64_Linux_ubuntu']
+  #
+  # @return the list trimed to absolute path
+  def Get_ABS_path(self,relative_path):
+    file_path_list = []
+    for item in relative_path:
+        file_path_list.append(os.path.abspath(item))
+    return copy.deepcopy(file_path_list)
+
 
   ##
   # @brief get file names from wildcard list
@@ -291,15 +305,48 @@ class ModuleCtx :
 
 
   ##
-  # @brief Get actual file names list from environment value(m_Build_Env,
-  #          m_Output ...) wild card(*,*.*)
-  #          
-  #
-  # @param bd_ctx[IN]
-  # @param taglist
+  # @brief trim build env( ex; m_Output, m_Build_Env ..) to ABS(absolute) path
+  #        this is for removing the duplications
+  # @param bd_ctx[IN]       build context
+  # @param bd_ctx_env[OUT]  the output env data to get 
+  #                           ex) bd_ctx.m_Build_Env,bd_ctx.m_Output ...
+  # @param taglist[IN]      Tags to apply
+  #                           ex) [ 'lib_src','swit_src','swut_src','src']
   #
   # @return 
-  
+  def Set_Trim_to_ABS_path(self,bd_ctx = None,bd_ctx_env = None ,\
+      taglist = None):
+    if (taglist == None) :
+      taglist = ['inc_path','lib_path','lib_src','src','swit_src','swut_src',\
+      'test_inc_path','test_lib_path','bin_file']
+    if (bd_ctx == None):
+      bd_ctx = self
+    if (bd_ctx_env == None):
+      bd_ctx_env = bd_ctx.m_Build_Env
+
+    # change file/path list to absolute path
+    for idx,item in enumerate(bd_ctx_env): 
+      for env_idx,env_val in enumerate(bd_ctx_env[idx][1]): 
+         if (env_val[0] in taglist ):
+          # in case of 'bin_file' the format is slightly difference
+          # ex ) 'inc_path',['inc/x64_Linux_ubuntu']
+          # ex ) 'bin_file',[ ['out/x64_Linux_ubuntu/lib/libA.so'],'lib']
+           if (env_val[0] == 'bin_file') :
+             continue
+             #for binfile_idx,binfile_val in enumerate(bd_ctx_env[idx][env_idx][1][1]):
+             #  print("\033[1;36m :x: chk "+str(bd_ctx_env[idx][env_idx][1][1][binfile_idx][0])+"\033[m")
+             #  bd_ctx_env[idx][env_idx][1][1][binfile_idx][0] = \
+             #    bd_ctx.Get_ABS_path(\
+             #    [bd_ctx_env[idx][env_idx][1][1][binfile_idx][0]])
+           else :
+             bd_ctx_env[idx][1][env_idx][1] = \
+                 bd_ctx.Get_ABS_path(env_val[1])
+             tmp_set = set(bd_ctx_env[idx][1][env_idx][1])
+             bd_ctx_env[idx][1][env_idx][1] = list(tmp_set)
+
+    return None
+
+
   
   ##
   # @brief Get actual file names list from environment value
@@ -327,10 +374,11 @@ class ModuleCtx :
           # ex ) 'inc_path',['inc/x64_Linux_ubuntu']
           # ex ) 'bin_file',[ ['out/x64_Linux_ubuntu/lib/libA.so'],'lib']
            if (env_val[0] == 'bin_file') :
-             for binfile_idx,binfile_val in enumerate(bd_ctx_env[idx][env_idx][1][1]):
-               bd_ctx_env[idx][env_idx][1][1][binfile_idx][0] = \
-                 bd_ctx.Get_files_from_wildcard(\
-                 [bd_ctx_env[idx][env_idx][1][1][binfile_idx][0]])
+             continue
+             #for binfile_idx,binfile_val in enumerate(bd_ctx_env[idx][1][env_idx][1]):
+             #  bd_ctx_env[idx][1][env_idx][1][binfile_idx][0] = \
+             #    bd_ctx.Get_files_from_wildcard(\
+             #    [bd_ctx_env[idx][1][env_idx][1][binfile_idx][0]])
            else :
              bd_ctx_env[idx][1][env_idx][1] = \
                  bd_ctx.Get_files_from_wildcard(env_val[1])
@@ -496,7 +544,8 @@ class ModuleCtx :
               base_val_item[val_idx] =copy.deepcopy(self.m_ModuleID.GetTopPath() \
                 +self.m_ModuleID.GetModulePath()+base_val_item[val_idx] )
 
-    # Apply(merge) dependency modules' 'bin_file' values
+    # Apply(merge) dependency modules' 
+    # 'bin_file' , 'lib_path','lib','lib_src' values
     for idx,Build_Env_each_config in enumerate(self.m_Output) :
       output_env_config = Build_Env_each_config[0]
       output_env_val = copy.deepcopy(Build_Env_each_config[1])
@@ -509,6 +558,19 @@ class ModuleCtx :
             self.m_Output[idx][1] = \
               copy.deepcopy(self.merge_items(\
               self.m_Output[idx][1],output_env_val,'bin_file'))
+            output_env_val =copy.deepcopy(output_item[1])
+            self.m_Output[idx][1] = \
+              copy.deepcopy(self.merge_items(\
+              self.m_Output[idx][1],output_env_val,'lib_path'))
+            self.m_Output[idx][1] = \
+              copy.deepcopy(self.merge_items(\
+              self.m_Output[idx][1],output_env_val,'lib'))
+            self.m_Output[idx][1] = \
+              copy.deepcopy(self.merge_items(\
+              self.m_Output[idx][1],output_env_val,'lib_src'))
+
+
+
 
 
   ##
@@ -659,7 +721,7 @@ class ModuleCtx :
 
     # Read output context
     self.Read_Output_Ctx()
-   
+
     return True
 
   ##
@@ -753,7 +815,7 @@ class ModuleCtx :
             dependency_module_list+=ret[1]
     return (True,dependency_module_list)
     
-  
+ 
 
   ##
   # @brief Get config's build environment values
@@ -826,7 +888,7 @@ class ModuleCtx :
           "\033[m")
       raise CtxInitErr
     return env_val
-
+ 
   ##
   # @brief Set build context in info on scons builder's 
   #
@@ -836,8 +898,14 @@ class ModuleCtx :
   #
   # @return 
   def Set_scons_builder(self,bd_ctx,config,builder):
+    print("\033[1;33mModuleID  ; "+str(self.m_ModuleID.m_ModuleID)+"\033[m")
     # change file list from glob wild card
     self.Set_Filelist_from_env_wildcard(bd_ctx,bd_ctx.m_Build_Env)
+
+    # change file/path to absolute path and remove its duplication
+    self.Set_Trim_to_ABS_path(bd_ctx,bd_ctx.m_Build_Env)
+
+    #print("\033[1;36mBuild_Env ; "+str(self.m_Build_Env)+"\033[m")
 
     # set the config data
     config_dic = bd_ctx.m_Config_Dictionary[config]
@@ -864,6 +932,7 @@ class ModuleCtx :
     for module_inst in self.m_Dependency_Module:
       connected_config = self.Get_dependency_module_config(self,
           module_inst.m_ModuleID, config)
+    
     return
 
   ##

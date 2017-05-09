@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
-#include "libmodule.h"
-
+#include "libmodule_b.h"
 // Test template    
 
 class SampleTest : public testing::Test {

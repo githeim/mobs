@@ -443,8 +443,8 @@ class ModuleCtx_Test(unittest.TestCase):
 
 
 if __name__ == "__main__":
-  suite00 = unittest.TestSuite(map(ModuleCtx_Test,['test_Collect_all_dependency_bin_file_list']))
-  suites = unittest.TestSuite([suite00])
-  unittest.TextTestRunner(verbosity=2).run(suites)
+  #suite00 = unittest.TestSuite(map(ModuleCtx_Test,['test_Collect_all_dependency_bin_file_list']))
+  #suites = unittest.TestSuite([suite00])
+  #unittest.TextTestRunner(verbosity=2).run(suites)
 
-  #unittest.main()
+  unittest.main()

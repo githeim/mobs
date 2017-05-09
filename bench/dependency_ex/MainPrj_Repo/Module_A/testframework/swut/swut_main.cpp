@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "libmodule.h"
+#include "libmodule_a.h"
 
 // Test template    
 
