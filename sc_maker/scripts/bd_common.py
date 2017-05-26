@@ -28,6 +28,29 @@ class CtxInitErr(Exception):
     return 'build context Initiation Err'
 
 ##
+# @brief find build context path name and file name
+#
+# @param ctx_file_path_input[IN] ex) './', '../../MainPrj_Repo/Module_B/'
+# @param bd_ctx_path_name[IN] ex) './build_context'
+# @param ctx_file_name[IN] ex) 'bd_config.py'
+# @param depth_to_find[IN] limitation depth to find context file 
+#                          default value is 3, this fuction will search the 
+#                          directory upper 2 directories(including current dir)
+#                           upper 2 directory and curret dir = 3
+#
+# @return ctx_file_path 
+def Find_bd_ctx_path(ctx_file_path_input, bd_ctx_path_name, ctx_file_name, \
+    depth_to_find = 3):
+  for depth in range(depth_to_find):
+    ctx_file_path = ctx_file_path_input+str('../'*depth)+bd_ctx_path_name
+    if (os.path.isfile(ctx_file_path+'/'+ctx_file_name)):
+      return ctx_file_path
+  print("\033[1;31mErr,Can not find any build ctx file ["\
+      +ctx_file_path_input+"]["+ctx_file_name+"]\033[m");
+  return ctx_file_path
+
+
+##
 # @brief Get external module instance  
 #        ; read the *.py file and get its instance
 #        this function is for python 2.7x 
@@ -51,7 +74,7 @@ def Get_ext_Module_inst(file_path,base_file,ModuleID=None):
         ' Cannot find the file ['+base_file+'] on paths ['+str(file_path)+']'
         +'\033[m')
       print("\033[1;31mErr; cur dir ["+str(os.getcwd())+"]\033[m")
-
+      raise CtxInitErr
       return (False,None)
 
   if (ModuleID == None):
@@ -105,7 +128,9 @@ class ModuleCtx :
   def __init__(self, ModuleID_input = None, 
     ctx_path_input = DEF_DEFAULT_CTX_PATH,
     settings_file = DEF_DEFAULT_SETTINGS_MODULE,
-    config_file = DEF_DEFAULT_CONFIG_MODULE
+    settings_path = DEF_DEFAULT_CTX_PATH,
+    config_file = DEF_DEFAULT_CONFIG_MODULE,
+    config_path = DEF_DEFAULT_CTX_PATH
     ):
 
     # initialization of the member variables ==============
@@ -113,21 +138,27 @@ class ModuleCtx :
     ##
     # @brief Module ID ; class ModuleID
     self.m_ModuleID=None
-    ##
-    # @brief context files' path ; default './build_context/'
-    self.m_ctx_path=None
 
     ##
     # @brief target config to build
     self.m_Target_Config = None
+
     ##
     # @brief module settings file base name(=without extention-'.py')
     #        default ; 'build_settings'
-    self.m_setting_base_file=None
+    self.m_settings_base_file=None
+    ##
+    # @brief module settings file path
+    self.m_settings_path=None
+
     ##
     # @brief module config file base name(=without extention-'.py')
     #        default ; 'build_config'
     self.m_config_base_file=None 
+
+    ##
+    # @brief module config file path
+    self.m_config_path=None
     ##
     # @brief Default Config ex) 'x64_Linux_ubuntu'...'x64_Windows'..
     self.m_Default_Config=None
@@ -186,14 +217,11 @@ class ModuleCtx :
     ctx_path = ''
     # Get Module ID if ModuleID_input is None
     if (ModuleID_input == None):
+      config_path = Find_bd_ctx_path('./',config_path, config_file)
+
       ctx_path = ctx_path_input
       # read bd_settings.py file and get Module ID
-      ret = Get_ext_Module_inst(ctx_path,settings_file)
-      if (ret[0] == False):
-        print("\033[1;31mErr ; Class [ModuleCtx] settings Initiation Error("
-            +ctx_path
-            +")("+settings_file+") \033[m");
-        raise CtxInitErr
+      ret = Get_ext_Module_inst(settings_path,settings_file)
       module_inst = ret[1]
       try :
         moduleID = ModuleID(module_inst.Get_Module_ID())
@@ -203,18 +231,18 @@ class ModuleCtx :
     elif (isinstance(ModuleID_input, ModuleID)):
       moduleID = ModuleID_input
       ctx_path = moduleID.GetTopPath()+moduleID.GetModulePath()+ctx_path_input
+      settings_path = moduleID.GetTopPath()+moduleID.GetModulePath()+settings_path
+      config_path = Find_bd_ctx_path(
+          moduleID.GetTopPath()+moduleID.GetModulePath(),
+          config_path, config_file)
+
     else :
       print("\033[1;31mErr; Get Module ID Error ; Chk Module ID Value\033[m\n");
       raise CtxInitErr
 
     # read bd_config.py file and get Default Config 
-    ret = Get_ext_Module_inst(ctx_path,config_file,
+    ret = Get_ext_Module_inst(config_path,config_file,
         moduleID)
-    if (ret[0] == False):
-      print("\033[1;31m Class [ModuleCtx] config Initiation Error("
-          +ctx_path
-          +")("+config_file+")(curdir;["+os.getcwd()+"] \033[m\n");
-      raise CtxInitErr
     module_inst = ret[1]
     try :
       default_config = module_inst.DEFAULT_CONFIG
@@ -223,16 +251,18 @@ class ModuleCtx :
       raise CtxInitErr
     
     self.m_ModuleID = copy.deepcopy(moduleID)
-    self.m_ctx_path = copy.deepcopy(ctx_path)
     self.m_Default_Config = copy.deepcopy(default_config)
-    self.m_setting_base_file = copy.deepcopy(settings_file)
+    self.m_settings_base_file = copy.deepcopy(settings_file)
+    self.m_settings_path = copy.deepcopy(settings_path)
     self.m_config_base_file = copy.deepcopy(config_file)
+    self.m_config_path = copy.deepcopy(config_path)
 
     if (self.ReadModuleCtx() == False):
       print("\033[1;31m Read Module Err  \033[m\n");
       raise CtxInitErr
  
     return
+
   ##
   # @brief merge two items; make logical union(합집합) set
   #
@@ -497,8 +527,9 @@ class ModuleCtx :
   # @return 
   def Read_Output_Ctx(self,module_inst = None):
     if (module_inst == None):
-      ret = Get_ext_Module_inst(self.m_ctx_path,self.m_setting_base_file,
+      ret = Get_ext_Module_inst(self.m_settings_path,self.m_settings_base_file,
           self.m_ModuleID)
+
       module_inst = ret[1]
 
     self.m_Output_Common  = copy.deepcopy(module_inst.Get_output_common())
@@ -641,19 +672,23 @@ class ModuleCtx :
               +str(target_file_name_path)+"]\033[m")
 
   def ReadModuleCtx(self):
-    if (self.m_ctx_path == None  
-        or self.m_setting_base_file == None 
-        or self.m_config_base_file == None):
-
-      print("\033[1;31m  Err; Readmodule Arg err "+str(self.m_ctx_path)+" "+
-          str(self.m_setting_base_file)+" "+
+    if (   self.m_settings_base_file == None 
+        or self.m_settings_path == None 
+        or self.m_config_base_file == None
+        or self.m_config_path == None
+        ):
+      print("\033[1;31m  Err; Readmodule Arg err "+
+          str(self.m_settings_path)+" "+
+          str(self.m_settings_base_file)+" "+
+          str(self.m_config_path)+" "+
           str(self.m_config_base_file)+" "+
           "\033[m\n")
       return False
 
     # Read Module Settings Context
-    ret = Get_ext_Module_inst(self.m_ctx_path,self.m_setting_base_file,
+    ret = Get_ext_Module_inst(self.m_settings_path,self.m_settings_base_file,
         self.m_ModuleID)
+
     module_inst = ret[1]
 
     self.m_Dependency_Module_Info = \
@@ -673,11 +708,11 @@ class ModuleCtx :
     self.m_PostBuildJob  = copy.deepcopy(module_inst.Do_post_build)
    
     # Read Module Config Context
-    ret = Get_ext_Module_inst(self.m_ctx_path,self.m_config_base_file,
+    ret = Get_ext_Module_inst(self.m_config_path,self.m_config_base_file,
         self.m_ModuleID)
     module_inst = ret[1]
     self.m_Config_Dictionary = copy.deepcopy(module_inst.Get_CONFIG_DIC())
-    
+
     # create dependency module instance
     for item in self.m_Dependency_Module_Info:
       dependency_module_id = item[0]
@@ -1017,7 +1052,6 @@ def Create_Bd_Ctx(ModuleID = None,
     ):
   try:
     module_ctx = ModuleCtx(ModuleID)
-
   except CtxInitErr as e:
     print(e)
     return None

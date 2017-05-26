@@ -130,8 +130,10 @@ class ModuleCtx_Test(unittest.TestCase):
     os.chdir(TEST_MODULE_PATH)
     test_ModuleCtx=ModuleCtx()
     output =test_ModuleCtx.Get_files_from_wildcard(['libsrc/*.cpp','libsrc/sub00/*.cpp'])
-    self.assertEqual(output,['libsrc/libsrcA0.cpp', 'libsrc/libsrcA1.cpp',\
-        'libsrc/libmodule.cpp', 'libsrc/sub00/sub00_02.cpp',\
+    print("\033[1;33m :x: output "+str(output)+"\033[m")
+
+    self.assertEqual(output,['libsrc/libsrcA1.cpp', 'libsrc/libsrcA0.cpp', \
+        'libsrc/libmodule.cpp', 'libsrc/sub00/sub00_02.cpp', \
         'libsrc/sub00/sub00_01.cpp'])
     del test_ModuleCtx
     os.chdir(origin_dir)

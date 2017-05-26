@@ -1,7 +1,0 @@
-#include <stdio.h>
-#include "libmodule_f.h"
-int main(int argc, char *argv[]) {
-  printf("Hello World\n");
-  printf("libmodule() = %d\n", testmodule_Module_F());
-  return 0;
-}

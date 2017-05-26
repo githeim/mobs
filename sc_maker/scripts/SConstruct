@@ -6,7 +6,6 @@ import atexit
 import multiprocessing
 
 sys.path.append("./build_context")
-from bd_config import *
 from bd_common import *
 
 # make builder ==============================
@@ -23,7 +22,7 @@ else :
 
 
 # get Target config  ========================
-ret= bd_ctx.Get_target_config(ARGLIST,DEFAULT_CONFIG,Get_CONFIG_DIC())
+ret= bd_ctx.Get_target_config(ARGLIST)
 if (ret[0] == False):
   print("\033[1;31mError on setting Target config\033[m")
   exit(1)
