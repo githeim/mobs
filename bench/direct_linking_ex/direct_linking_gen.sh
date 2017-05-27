@@ -1,3 +1,4 @@
+!/bin/sh
 rm -rf MainPrj_Repo 
 cd ../.. ; ./gen_mobs.sh ; cd -
 ../../mobs.py Module_A MainPrj_Repo

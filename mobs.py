@@ -59,6 +59,64 @@ def DoDelimeterReplace(text):
 # files ; bd_settings.sh
 
 
+def getScript_SConscript() :
+  return \
+"""# -*- coding: utf-8 -*- 
+import os
+Import('Target_env')
+Import('Test_env')
+Import('bd_ctx')
+
+
+LIB_TYPE = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib_type')
+LIBSRC_FILES = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib_src')
+SWUT_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'swut_src')
+SWIT_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'swit_src')
+SRC_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'src')
+LIBS = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib')
+
+TARGET_NAME = bd_ctx.m_Target_Name[bd_ctx.m_Target_Config]
+TARGET_LIB_FILE = bd_ctx.m_Target_LIB_file[bd_ctx.m_Target_Config]
+TARGET_EXE_FILE = bd_ctx.m_Target_EXE_file[bd_ctx.m_Target_Config]
+SWIT_RUNNER_FILE = bd_ctx.m_SWIT_RUNNER_file[bd_ctx.m_Target_Config]
+SWUT_RUNNER_FILE = bd_ctx.m_SWUT_RUNNER_file[bd_ctx.m_Target_Config]
+
+
+
+is_direct_linking =bd_ctx.Is_Direct_Linking(bd_ctx,bd_ctx.m_Target_Config)
+if (is_direct_linking == 'False'):
+  if (LIB_TYPE == 'Shared') :
+      LIB_BUILDER=Target_env.SharedLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
+  elif(LIB_TYPE == 'Static') :
+      LIB_BUILDER=Target_env.StaticLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
+
+  EXE_BUILDER=Target_env.Program(TARGET_EXE_FILE,SRC_FILES,LIBS=[TARGET_NAME]+LIBS)
+
+  if (SWUT_FILES != [] and SWIT_FILES != [] ):
+      SWUT_BUILDER=Test_env.Program(SWUT_RUNNER_FILE,SWUT_FILES)
+      SWIT_BUILDER=Test_env.Program(SWIT_RUNNER_FILE,SWIT_FILES)
+      Depends( SWUT_BUILDER,TARGET_LIB_FILE)
+      Depends( SWIT_BUILDER,TARGET_LIB_FILE)
+
+  Depends( EXE_BUILDER,TARGET_LIB_FILE)
+elif (is_direct_linking == 'True'):
+  print("\\033[1;36mModule["+str(bd_ctx.m_ModuleID.m_ModuleName)+"] is in"+\\
+  " direct linking mode, therefore the build will not be proceeded \\033[m")
+
+
+
+# Setting Submodule repository 
+# ; remember SConscript current dir is 'out/CONFIG-NAME' 
+#   that's why "../.." is added
+Target_env.Repository([bd_ctx.m_ModuleID.GetTopPath()+"../../"])
+"""
+def getScript_libmodule_cpp() :
+  return \
+"""
+int testmodule_D_E_L_I_getPrjName_() {
+  return 7;
+}
+"""
 def getScript_main_cpp() :
   return \
 """#include <stdio.h>
@@ -68,6 +126,360 @@ int main(int argc, char *argv[]) {
   printf("libmodule() = %d\\n", testmodule_D_E_L_I_getPrjName_());
   return 0;
 }
+"""
+def getScript_swut_main_cpp() :
+  return \
+"""#include <gtest/gtest.h>
+#include "libmodule.h"
+
+// Test template    
+
+class SampleTest : public testing::Test {
+  protected:
+    virtual void SetUp() {
+    }
+    virtual void TearDown() {
+    }
+};
+ 
+TEST_F(SampleTest, BasicTest00) {
+  EXPECT_EQ(2, (1+1));
+  EXPECT_EQ(5, (2+3));
+  EXPECT_EQ(testmodule_D_E_L_I_getPrjName_(), 7);
+}
+
+
+int main(int argc, char *argv[])
+{
+  char bus_addr[1024] ={ 0 , };
+  char cmd[2048] ={ 0 , };
+  int custom_argc=2;
+  char* pArgv[2];
+  char* pCmd1 =(char*)"--gtest_output=xml:swut_report.xml";
+  pArgv[1] = pCmd1;
+
+  ::testing::InitGoogleTest(&custom_argc,(char**)pArgv);
+  return RUN_ALL_TESTS();
+}
+"""
+def getScript_bd_settings_py() :
+  return \
+"""# -*- coding: utf-8 -*- 
+import shutil
+import copy
+import subprocess
+import os
+
+def Get_Module_ID():
+    return [ 'D_E_L_I_getPrjName_','D_E_L_I_getGroupName_']
+
+def Get_Module_Name() :
+    Module_ID=Get_Module_ID()
+    module_name = Module_ID[0]
+    return module_name
+
+    ##
+    # @brief Get dependency info, for each dependency module 
+    #         has the configuration connection info. Without 
+    #         configuration info, the default connection is 
+    #         connected to same configurations
+    #
+    # @return info of the dependency info
+def Get_dependency_module_info(): 
+    return [
+              # Example
+              #  [
+              #      ['SDL2','SupportLayer'],
+              #      {
+              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+              #          'x64_Windows':'x64_Windows',
+              #          'arm_Android':'arm_Android',
+              #      }
+              #  ],
+              #  [
+              #      ['SDL2_ttf','SupportLayer'],
+              #      {
+              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
+              #          'x64_Windows':'x64_Windows',
+              #          'arm_Android':'arm_Android',
+              #      }
+              #  ]
+
+           ]
+
+
+def Get_common_bd_env(): 
+    return  [
+                ['inc_path', ['inc','libsrc','src'] ], 
+                ['lib_path', ['lib'] ],            
+                ['lib'     , ['pthread' ] ], 
+                ['lib_src' , ['libsrc/*.cpp'] ], 
+                ['cppflags', [ ] ],
+                ['cflags'  , [ ] ],
+                ['ccflags' , [ ] ],
+            ]                  
+ 
+# Total Build Environment
+def Get_specific_bd_env():   
+  return [
+            ['x64_Linux_ubuntu',
+               [
+                  ['inc_path',[ ] ],
+                  ['lib_path',['out/x64_Linux_ubuntu/lib' ] ],
+                  ['lib'     ,[ ] ],
+                  ['lib_src' ,[ ] ],
+                  ['src'     ,['src/main.cpp'] ],
+                  ['lib_type' ,'Shared' ],
+                  ['swit_src' ,['testframework/swit/*.cpp'] ], 
+                  ['swut_src' ,['testframework/swut/*.cpp'] ], 
+                  ['test_lib' ,['gtest'] ], 
+                  ['test_inc_path' ,['D_E_L_I_getTestFramework_Path_/include'] ], 
+                  ['test_lib_path' ,['D_E_L_I_getTestFramework_Path_/mybuild'] ], 
+                  #['target_lib_name' ,'customized_lib_name' ], # use this to change the library name
+                  ['direct_linking','False'], 
+                  # --> if you want to use the libsrc codes in src code level
+                  #     use this option , default ; 'False'
+               ],
+            ],
+            ['x64_Windows',
+               [
+                  [ 'inc_path',[ ] ],
+                  [ 'lib_path',['out/x64_Windows/lib' ] ],
+                  [ 'lib'     ,[ ] ],
+                  [ 'lib_src' ,[ ] ],
+                  [ 'src'     ,['src/main.cpp'] ],
+                  [ 'lib_type' ,'Shared' ],
+               ],
+            ],
+        ]
+
+    ##
+    # @brief common config independent from configs (platforms,OS ...)
+    #
+    # @return common config value
+def Get_output_common(): 
+    return  [
+                [ 'inc_path',['inc'] ],
+                [ 'lib',['D_E_L_I_getPrjName_'] ],
+                [ 'bin_file',[
+                    [ 'res/*.*','res'],
+                    ] 
+                  ],
+
+            ]
+
+    ##
+    # @brief Get output list 
+    #
+    # @return Get output list of the module
+def Get_output_specific():
+  return [
+      ['x64_Linux_ubuntu',
+        [
+            [ 'inc_path',['inc/x64_Linux_ubuntu'] ],
+            [ 'bin_file',[
+                ['out/x64_Linux_ubuntu/lib/libD_E_L_I_getPrjName_.so','lib'],
+                ]
+              ],
+            [ 'lib_path',['out/x64_Linux_ubuntu/lib'] ],
+        ]
+      ],
+      ['x64_Windows', 
+        [
+            [ 'inc_path',['inc/x64_Windows'] ],
+            [ 'bin_file',[
+                  ['out/x64_Windows/lib/D_E_L_I_getPrjName_.dll','lib'],
+                ] 
+              ],
+            [ 'lib_path',['out/x64_Windows/lib'] ],
+        ]
+      ]
+    ]
+
+def Get_output_dirs():
+    return [
+        'res',
+        'lib',
+        'bin',
+        'doc',
+        ]
+
+def Get_Bd_Environment():
+    global g_Bd_Environment 
+    return g_Bd_Environment
+ 
+def Set_Bd_Environment(val):
+    global g_Bd_Environment 
+    g_Bd_Environment = copy.deepcopy(val)
+
+def Do_pre_build(target_config):
+    print("Do pre build job")
+
+def Do_post_build(target_config):
+    print("Do post build job")
+    #remote_share_dir ="~/01_share/00_web_share"
+    #outputdir = 'out/'+target_config+'/'
+    #cmd="cp -r "+outputdir+"*"+" "+remote_share_dir
+    #print("$ "+cmd)  
+    #output=subprocess.call (cmd, shell=True)
+    #print("Binary upload done")
+"""
+def getScript_bd_config_py() :
+  return \
+"""# -*- coding: utf-8 -*- 
+import os
+
+DEFAULT_CONFIG = 'x64_Linux_ubuntu'
+def Get_CONFIG_DIC() :
+  return {
+    'x64_Linux_ubuntu':{
+        'ENV' : {
+          'PATH': '/usr/bin'+':'+str(os.environ['PATH']),
+            },
+        'CC':       'gcc',
+        'CXX':      'g++',
+        'CPP':      'gcc',
+        'AS':       'as',
+        'LD':       'ld',
+        'GDB':      'gdb',
+        'STRIP':    'strip',
+        'RANLIB':   'ranlib',
+        'OBJCOPY':   'objcopy',
+        'OBJDUMP':   'objdump',
+        'AR':       'ar',
+        'NM':       'nm',
+        'CFLAGS':   ['',],
+        'CXXFLAGS':   ['',],
+        'SHLIBSUFFIX':'.so',
+        'SHLIBPREFIX':'lib',     
+        'PROGSUFFIX':'',
+        'LINKFLAGS':['-pthread'],
+    },
+    'x64_Windows':{
+        'ENV' : {
+          'PATH':  '/opt/mingw64/bin'+':'+str(os.environ['PATH']),
+          },
+        'CC':       'x86_64-w64-mingw32-gcc',
+        'CXX':      'x86_64-w64-mingw32-g++',
+        'CPP':      'x86_64-w64-mingw32-gcc',
+        'AS':       'x86_64-w64-mingw32-as',
+        'LD':       'x86_64-w64-mingw32-ld',
+        'GDB':      'x86_64-w64-mingw32-gdb',
+        'STRIP':    'x86_64-w64-mingw32-strip',
+        'RANLIB':   'x86_64-w64-mingw32-ranlib',
+        'OBJCOPY':  'x86_64-w64-mingw32-objcopy',
+        'OBJDUMP':  'x86_64-w64-mingw32-objdump',
+        'AR':       'x86_64-w64-mingw32-ar',
+        'NM':       'x86_64-w64-mingw32-nm',
+        'CFLAGS':   [''],
+        'CXXFLAGS':   ['',],
+        'SHLIBSUFFIX':'.dll', # for Windows DLL
+        'SHLIBPREFIX':'',      # for Windows DLL
+        'SHCCFLAGS':'', #in Windows -fPIC option isn't needed
+        'PROGSUFFIX':'.exe',
+        'LINKFLAGS':['-static-libgcc', '-static-libstdc++'],
+    },
+  }
+"""
+def getScript_SConstruct() :
+  return \
+"""# -*- coding: utf-8 -*- 
+import os
+import sys
+import glob
+import atexit
+import multiprocessing
+
+# importing bd_common.py file =============
+def Find_bd_ctx_path(ctx_file_path_input, bd_ctx_path_name, ctx_file_name, \\
+    depth_to_find = 3):
+  for depth in range(depth_to_find):
+    ctx_file_path = ctx_file_path_input+str('../'*depth)+bd_ctx_path_name
+    if (os.path.isfile(ctx_file_path+'/'+ctx_file_name)):
+      return ctx_file_path
+  print("\\033[1;31mErr,Can not find any build ctx file ["\\
+      +ctx_file_path_input+"]["+ctx_file_name+"]\\033[m");
+  exit(1)
+
+bd_common_path = Find_bd_ctx_path('./','./build_context', 'bd_common.py')
+sys.path.append(bd_common_path)
+from bd_common import *
+# =========================================
+
+
+# make builder ==============================
+common_env = Environment()
+
+# make build context instance
+
+bd_ctx = Create_Bd_Ctx()
+if (bd_ctx == None) :
+  print("\\033[1;31mErr on build context instance \\033[m")
+  exit(1)
+else :
+  print("\\033[1;33mModule ["+str(bd_ctx.m_ModuleID.m_ModuleID)+"] build start\\033[m")
+
+
+# get Target config  ========================
+ret= bd_ctx.Get_target_config(ARGLIST)
+if (ret[0] == False):
+  print("\\033[1;31mError on setting Target config\\033[m")
+  exit(1)
+else:
+  bd_ctx.m_Target_Config = ret[1]
+if (bd_ctx.m_Target_Config == ''):
+  print('Error on setting Target config')
+  exit(1)
+# ===========================================
+
+# Purge All ; purge all including its sub modules
+if (bd_ctx.Do_PurgeAll(ARGLIST,bd_ctx) == True):
+  exit(0)
+
+# Chk Collect Dependency Module bin files
+bd_ctx.Do_Chk_collect_flag(ARGLIST,bd_ctx)
+
+# dependent module builds ===================
+if (GetOption('clean') != True) :
+    if (bd_ctx.Do_dependent_module_build(bd_ctx.m_Target_Config
+      , bd_ctx) != True ):
+        exit(1)
+## ===========================================
+
+# remove dependency libraries
+if (GetOption('clean') == True) :
+    for item in glob.glob('out/'+bd_ctx.m_Target_Config+'/lib/*'):
+        os.remove(item)
+
+# default build execution option
+# Set Number of CPU ===============================
+num_cpu = int(os.environ.get('NUM_CPU',multiprocessing.cpu_count()))
+SetOption('num_jobs', num_cpu)
+print("\\033[1;32mNumber of CPU in the system : "+str(num_cpu)+"\\033[m")
+# =================================================
+
+# Post Build procedure ============================
+if (GetOption('clean') != True) :
+  atexit.register(display_build_status,bd_ctx,bd_ctx.m_Target_Config)
+# =================================================
+
+# Pre Build procedure ============================
+bd_ctx.m_PreBuildJob(bd_ctx.m_Target_Config)
+# =================================================
+
+Target_env = common_env.Clone()
+bd_ctx.Set_scons_builder(bd_ctx,bd_ctx.m_Target_Config,Target_env)
+Test_env = Target_env.Clone()
+bd_ctx.Set_scons_test_builder(bd_ctx,bd_ctx.m_Target_Config,Test_env)
+
+Export('Target_env')
+Export('Test_env')
+Export('bd_ctx')
+
+
+# generate output directories 
+bd_ctx.Make_dirs(bd_ctx.m_Target_Config,bd_ctx.m_Output_Dir)
+SConscript('./SConscript',variant_dir='out/'+bd_ctx.m_Target_Config,duplicate=0)
 """
 def getScript_bd_common_py() :
   return \
@@ -1205,254 +1617,6 @@ def display_build_status(bd_ctx,target_config):
   print (failures_message)
 
 """
-def getScript_bd_settings_py() :
-  return \
-"""# -*- coding: utf-8 -*- 
-import shutil
-import copy
-import subprocess
-import os
-
-def Get_Module_ID():
-    return [ 'D_E_L_I_getPrjName_','D_E_L_I_getGroupName_']
-
-def Get_Module_Name() :
-    Module_ID=Get_Module_ID()
-    module_name = Module_ID[0]
-    return module_name
-
-    ##
-    # @brief Get dependency info, for each dependency module 
-    #         has the configuration connection info. Without 
-    #         configuration info, the default connection is 
-    #         connected to same configurations
-    #
-    # @return info of the dependency info
-def Get_dependency_module_info(): 
-    return [
-              # Example
-              #  [
-              #      ['SDL2','SupportLayer'],
-              #      {
-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
-              #          'x64_Windows':'x64_Windows',
-              #          'arm_Android':'arm_Android',
-              #      }
-              #  ],
-              #  [
-              #      ['SDL2_ttf','SupportLayer'],
-              #      {
-              #          'x64_Linux_ubuntu':'x64_Linux_ubuntu',
-              #          'x64_Windows':'x64_Windows',
-              #          'arm_Android':'arm_Android',
-              #      }
-              #  ]
-
-           ]
-
-
-def Get_common_bd_env(): 
-    return  [
-                ['inc_path', ['inc','libsrc','src'] ], 
-                ['lib_path', ['lib'] ],            
-                ['lib'     , ['pthread' ] ], 
-                ['lib_src' , ['libsrc/*.cpp'] ], 
-                ['cppflags', [ ] ],
-                ['cflags'  , [ ] ],
-                ['ccflags' , [ ] ],
-            ]                  
- 
-# Total Build Environment
-def Get_specific_bd_env():   
-  return [
-            ['x64_Linux_ubuntu',
-               [
-                  ['inc_path',[ ] ],
-                  ['lib_path',['out/x64_Linux_ubuntu/lib' ] ],
-                  ['lib'     ,[ ] ],
-                  ['lib_src' ,[ ] ],
-                  ['src'     ,['src/main.cpp'] ],
-                  ['lib_type' ,'Shared' ],
-                  ['swit_src' ,['testframework/swit/*.cpp'] ], 
-                  ['swut_src' ,['testframework/swut/*.cpp'] ], 
-                  ['test_lib' ,['gtest'] ], 
-                  ['test_inc_path' ,['D_E_L_I_getTestFramework_Path_/include'] ], 
-                  ['test_lib_path' ,['D_E_L_I_getTestFramework_Path_/mybuild'] ], 
-                  #['target_lib_name' ,'customized_lib_name' ], # use this to change the library name
-                  ['direct_linking','False'], 
-                  # --> if you want to use the libsrc codes in src code level
-                  #     use this option , default ; 'False'
-               ],
-            ],
-            ['x64_Windows',
-               [
-                  [ 'inc_path',[ ] ],
-                  [ 'lib_path',['out/x64_Windows/lib' ] ],
-                  [ 'lib'     ,[ ] ],
-                  [ 'lib_src' ,[ ] ],
-                  [ 'src'     ,['src/main.cpp'] ],
-                  [ 'lib_type' ,'Shared' ],
-               ],
-            ],
-        ]
-
-    ##
-    # @brief common config independent from configs (platforms,OS ...)
-    #
-    # @return common config value
-def Get_output_common(): 
-    return  [
-                [ 'inc_path',['inc'] ],
-                [ 'lib',['D_E_L_I_getPrjName_'] ],
-                [ 'bin_file',[
-                    [ 'res/*.*','res'],
-                    ] 
-                  ],
-
-            ]
-
-    ##
-    # @brief Get output list 
-    #
-    # @return Get output list of the module
-def Get_output_specific():
-  return [
-      ['x64_Linux_ubuntu',
-        [
-            [ 'inc_path',['inc/x64_Linux_ubuntu'] ],
-            [ 'bin_file',[
-                ['out/x64_Linux_ubuntu/lib/libD_E_L_I_getPrjName_.so','lib'],
-                ]
-              ],
-            [ 'lib_path',['out/x64_Linux_ubuntu/lib'] ],
-        ]
-      ],
-      ['x64_Windows', 
-        [
-            [ 'inc_path',['inc/x64_Windows'] ],
-            [ 'bin_file',[
-                  ['out/x64_Windows/lib/D_E_L_I_getPrjName_.dll','lib'],
-                ] 
-              ],
-            [ 'lib_path',['out/x64_Windows/lib'] ],
-        ]
-      ]
-    ]
-
-def Get_output_dirs():
-    return [
-        'res',
-        'lib',
-        'bin',
-        'doc',
-        ]
-
-def Get_Bd_Environment():
-    global g_Bd_Environment 
-    return g_Bd_Environment
- 
-def Set_Bd_Environment(val):
-    global g_Bd_Environment 
-    g_Bd_Environment = copy.deepcopy(val)
-
-def Do_pre_build(target_config):
-    print("Do pre build job")
-
-def Do_post_build(target_config):
-    print("Do post build job")
-    #remote_share_dir ="~/01_share/00_web_share"
-    #outputdir = 'out/'+target_config+'/'
-    #cmd="cp -r "+outputdir+"*"+" "+remote_share_dir
-    #print("$ "+cmd)  
-    #output=subprocess.call (cmd, shell=True)
-    #print("Binary upload done")
-"""
-def getScript_SConstruct() :
-  return \
-"""# -*- coding: utf-8 -*- 
-import os
-import sys
-import glob
-import atexit
-import multiprocessing
-
-sys.path.append("./build_context")
-from bd_common import *
-
-# make builder ==============================
-common_env = Environment()
-
-# make build context instance
-
-bd_ctx = Create_Bd_Ctx()
-if (bd_ctx == None) :
-  print("\\033[1;31mErr on build context instance \\033[m")
-  exit(1)
-else :
-  print("\\033[1;33mModule ["+str(bd_ctx.m_ModuleID.m_ModuleID)+"] build start\\033[m")
-
-
-# get Target config  ========================
-ret= bd_ctx.Get_target_config(ARGLIST)
-if (ret[0] == False):
-  print("\\033[1;31mError on setting Target config\\033[m")
-  exit(1)
-else:
-  bd_ctx.m_Target_Config = ret[1]
-if (bd_ctx.m_Target_Config == ''):
-  print('Error on setting Target config')
-  exit(1)
-# ===========================================
-
-# Purge All ; purge all including its sub modules
-if (bd_ctx.Do_PurgeAll(ARGLIST,bd_ctx) == True):
-  exit(0)
-
-# Chk Collect Dependency Module bin files
-bd_ctx.Do_Chk_collect_flag(ARGLIST,bd_ctx)
-
-# dependent module builds ===================
-if (GetOption('clean') != True) :
-    if (bd_ctx.Do_dependent_module_build(bd_ctx.m_Target_Config
-      , bd_ctx) != True ):
-        exit(1)
-## ===========================================
-
-# remove dependency libraries
-if (GetOption('clean') == True) :
-    for item in glob.glob('out/'+bd_ctx.m_Target_Config+'/lib/*'):
-        os.remove(item)
-
-# default build execution option
-# Set Number of CPU ===============================
-num_cpu = int(os.environ.get('NUM_CPU',multiprocessing.cpu_count()))
-SetOption('num_jobs', num_cpu)
-print("\\033[1;32mNumber of CPU in the system : "+str(num_cpu)+"\\033[m")
-# =================================================
-
-# Post Build procedure ============================
-if (GetOption('clean') != True) :
-  atexit.register(display_build_status,bd_ctx,bd_ctx.m_Target_Config)
-# =================================================
-
-# Pre Build procedure ============================
-bd_ctx.m_PreBuildJob(bd_ctx.m_Target_Config)
-# =================================================
-
-Target_env = common_env.Clone()
-bd_ctx.Set_scons_builder(bd_ctx,bd_ctx.m_Target_Config,Target_env)
-Test_env = Target_env.Clone()
-bd_ctx.Set_scons_test_builder(bd_ctx,bd_ctx.m_Target_Config,Test_env)
-
-Export('Target_env')
-Export('Test_env')
-Export('bd_ctx')
-
-
-# generate output directories 
-bd_ctx.Make_dirs(bd_ctx.m_Target_Config,bd_ctx.m_Output_Dir)
-SConscript('./SConscript',variant_dir='out/'+bd_ctx.m_Target_Config,duplicate=0)
-"""
 def getScript_libmodule_h() :
   return \
 """#ifndef _LIBMODULE_H_
@@ -1467,157 +1631,11 @@ def getScript_bd_sh() :
 scons -Q --debug=time CONFIG=x64_Linux_ubuntu $*
 #scons -Q --debug=time CONFIG=x64_Windows $*
 """
-def getScript_libmodule_cpp() :
-  return \
-"""
-int testmodule_D_E_L_I_getPrjName_() {
-  return 7;
-}
-"""
-def getScript_bd_config_py() :
-  return \
-"""# -*- coding: utf-8 -*- 
-import os
-
-DEFAULT_CONFIG = 'x64_Linux_ubuntu'
-def Get_CONFIG_DIC() :
-  return {
-    'x64_Linux_ubuntu':{
-        'PATH':     '/usr/bin'+':'+str(os.environ['PATH']),
-        'CC':       'gcc',
-        'CXX':      'g++',
-        'CPP':      'gcc',
-        'AS':       'as',
-        'LD':       'ld',
-        'GDB':      'gdb',
-        'STRIP':    'strip',
-        'RANLIB':   'ranlib',
-        'OBJCOPY':   'objcopy',
-        'OBJDUMP':   'objdump',
-        'AR':       'ar',
-        'NM':       'nm',
-        'CFLAGS':   ['',],
-        'CXXFLAGS':   ['',],
-        'SHLIBSUFFIX':'.so',
-        'SHLIBPREFIX':'lib',     
-        'PROGSUFFIX':'',
-        'LINKFLAGS':['-pthread'],
-    },
-    'x64_Windows':{
-        'PATH':     '/opt/mingw64/bin'+':'+str(os.environ['PATH']),
-        'CC':       'x86_64-w64-mingw32-gcc',
-        'CXX':      'x86_64-w64-mingw32-g++',
-        'CPP':      'x86_64-w64-mingw32-gcc',
-        'AS':       'x86_64-w64-mingw32-as',
-        'LD':       'x86_64-w64-mingw32-ld',
-        'GDB':      'x86_64-w64-mingw32-gdb',
-        'STRIP':    'x86_64-w64-mingw32-strip',
-        'RANLIB':   'x86_64-w64-mingw32-ranlib',
-        'OBJCOPY':  'x86_64-w64-mingw32-objcopy',
-        'OBJDUMP':  'x86_64-w64-mingw32-objdump',
-        'AR':       'x86_64-w64-mingw32-ar',
-        'NM':       'x86_64-w64-mingw32-nm',
-        'CFLAGS':   [''],
-        'CXXFLAGS':   ['',],
-        'SHLIBSUFFIX':'.dll', # for Windows DLL
-        'SHLIBPREFIX':'',      # for Windows DLL
-        'SHCCFLAGS':'', #in Windows -fPIC option isn't needed
-        'PROGSUFFIX':'.exe',
-        'LINKFLAGS':['-static-libgcc', '-static-libstdc++'],
-    },
-  }
-"""
 def getScript_run_sh() :
   return \
 """#!/bin/bash
 export LD_LIBRARY_PATH=out/x64_Linux_ubuntu/lib
 out/x64_Linux_ubuntu/bin/D_E_L_I_getPrjName_ $*
-"""
-def getScript_SConscript() :
-  return \
-"""# -*- coding: utf-8 -*- 
-import os
-Import('Target_env')
-Import('Test_env')
-Import('bd_ctx')
-
-
-LIB_TYPE = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib_type')
-LIBSRC_FILES = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib_src')
-SWUT_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'swut_src')
-SWIT_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'swit_src')
-SRC_FILES  = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'src')
-LIBS = bd_ctx.Get_bd_env(bd_ctx,bd_ctx.m_Target_Config,'lib')
-
-TARGET_NAME = bd_ctx.m_Target_Name[bd_ctx.m_Target_Config]
-TARGET_LIB_FILE = bd_ctx.m_Target_LIB_file[bd_ctx.m_Target_Config]
-TARGET_EXE_FILE = bd_ctx.m_Target_EXE_file[bd_ctx.m_Target_Config]
-SWIT_RUNNER_FILE = bd_ctx.m_SWIT_RUNNER_file[bd_ctx.m_Target_Config]
-SWUT_RUNNER_FILE = bd_ctx.m_SWUT_RUNNER_file[bd_ctx.m_Target_Config]
-
-
-
-is_direct_linking =bd_ctx.Is_Direct_Linking(bd_ctx,bd_ctx.m_Target_Config)
-if (is_direct_linking == 'False'):
-  if (LIB_TYPE == 'Shared') :
-      LIB_BUILDER=Target_env.SharedLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
-  elif(LIB_TYPE == 'Static') :
-      LIB_BUILDER=Target_env.StaticLibrary(TARGET_LIB_FILE,source=LIBSRC_FILES)
-
-  EXE_BUILDER=Target_env.Program(TARGET_EXE_FILE,SRC_FILES,LIBS=[TARGET_NAME]+LIBS)
-
-  if (SWUT_FILES != [] and SWIT_FILES != [] ):
-      SWUT_BUILDER=Test_env.Program(SWUT_RUNNER_FILE,SWUT_FILES)
-      SWIT_BUILDER=Test_env.Program(SWIT_RUNNER_FILE,SWIT_FILES)
-      Depends( SWUT_BUILDER,TARGET_LIB_FILE)
-      Depends( SWIT_BUILDER,TARGET_LIB_FILE)
-
-  Depends( EXE_BUILDER,TARGET_LIB_FILE)
-elif (is_direct_linking == 'True'):
-  print("\\033[1;36mModule["+str(bd_ctx.m_ModuleID.m_ModuleName)+"] is in"+\\
-  " direct linking mode, therefore the build will not be proceeded \\033[m")
-
-
-
-# Setting Submodule repository 
-# ; remember SConscript current dir is 'out/CONFIG-NAME' 
-#   that's why "../.." is added
-Target_env.Repository([bd_ctx.m_ModuleID.GetTopPath()+"../../"])
-"""
-def getScript_swut_main_cpp() :
-  return \
-"""#include <gtest/gtest.h>
-#include "libmodule.h"
-
-// Test template    
-
-class SampleTest : public testing::Test {
-  protected:
-    virtual void SetUp() {
-    }
-    virtual void TearDown() {
-    }
-};
- 
-TEST_F(SampleTest, BasicTest00) {
-  EXPECT_EQ(2, (1+1));
-  EXPECT_EQ(5, (2+3));
-  EXPECT_EQ(testmodule_D_E_L_I_getPrjName_(), 7);
-}
-
-
-int main(int argc, char *argv[])
-{
-  char bus_addr[1024] ={ 0 , };
-  char cmd[2048] ={ 0 , };
-  int custom_argc=2;
-  char* pArgv[2];
-  char* pCmd1 =(char*)"--gtest_output=xml:swut_report.xml";
-  pArgv[1] = pCmd1;
-
-  ::testing::InitGoogleTest(&custom_argc,(char**)pArgv);
-  return RUN_ALL_TESTS();
-}
 """
 def getScript_swit_main_cpp() :
   return \

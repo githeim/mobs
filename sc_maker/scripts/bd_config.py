@@ -5,7 +5,9 @@ DEFAULT_CONFIG = 'x64_Linux_ubuntu'
 def Get_CONFIG_DIC() :
   return {
     'x64_Linux_ubuntu':{
-        'PATH':     '/usr/bin'+':'+str(os.environ['PATH']),
+        'ENV' : {
+          'PATH': '/usr/bin'+':'+str(os.environ['PATH']),
+            },
         'CC':       'gcc',
         'CXX':      'g++',
         'CPP':      'gcc',
@@ -26,7 +28,9 @@ def Get_CONFIG_DIC() :
         'LINKFLAGS':['-pthread'],
     },
     'x64_Windows':{
-        'PATH':     '/opt/mingw64/bin'+':'+str(os.environ['PATH']),
+        'ENV' : {
+          'PATH':  '/opt/mingw64/bin'+':'+str(os.environ['PATH']),
+          },
         'CC':       'x86_64-w64-mingw32-gcc',
         'CXX':      'x86_64-w64-mingw32-g++',
         'CPP':      'x86_64-w64-mingw32-gcc',

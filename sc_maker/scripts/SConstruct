@@ -5,8 +5,22 @@ import glob
 import atexit
 import multiprocessing
 
-sys.path.append("./build_context")
+# importing bd_common.py file =============
+def Find_bd_ctx_path(ctx_file_path_input, bd_ctx_path_name, ctx_file_name, \
+    depth_to_find = 3):
+  for depth in range(depth_to_find):
+    ctx_file_path = ctx_file_path_input+str('../'*depth)+bd_ctx_path_name
+    if (os.path.isfile(ctx_file_path+'/'+ctx_file_name)):
+      return ctx_file_path
+  print("\033[1;31mErr,Can not find any build ctx file ["\
+      +ctx_file_path_input+"]["+ctx_file_name+"]\033[m");
+  exit(1)
+
+bd_common_path = Find_bd_ctx_path('./','./build_context', 'bd_common.py')
+sys.path.append(bd_common_path)
 from bd_common import *
+# =========================================
+
 
 # make builder ==============================
 common_env = Environment()
