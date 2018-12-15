@@ -1,0 +1,3 @@
+[submodule "sc_maker"]
+	path = sc_maker
+	url = git@github.com:githeim/sc_maker.git
